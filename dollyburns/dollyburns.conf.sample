@@ -1,0 +1,6 @@
+DumpDir           = '/var/lib/backups'
+DefaultDumpFormat = 'tgz'
+ConfDir           = '/etc/dollyburns.d'
+PluginDir         = '/usr/local/share/dollyburns/plugins'
+NumDumps          = 5
+Email             = 'zoso@demiurgo.org'

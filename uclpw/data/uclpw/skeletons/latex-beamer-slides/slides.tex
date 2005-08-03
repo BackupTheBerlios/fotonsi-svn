@@ -1,0 +1,106 @@
+\documentclass{beamer}
+\usepackage[%(LANG)]{babel}
+\usepackage[%(INPUT_ENC)]{inputenc}
+
+%\usepackage{beamerouterthemeinfolines}
+%\usepackage{beamerthemeBoadilla}      % Sin {,sub}apartados, blanco
+%\usepackage{beamerthemeRochester}     % Sin {,sub}apartados, simple, cuadrado
+%\usepackage{beamerthemeboxes}         % Sin {,sub}apartados, muy blanco
+\usepackage{beamerthemePittsburgh}    % Sin {,sub}apartados, muy blanco, redondo
+%\usepackage{beamerthemeMadrid}        % Sin {,sub}apartados
+%\usepackage{beamerthemeSingapore}     % Sin subapartados, blanco, puntitos
+%\usepackage{beamerthemeCopenhagen}    % Violeta/negro, cargado, con todo
+%\usepackage{beamerthemeLuebeck}       % Como Copenhagen, cuadrado
+%\usepackage{beamerthemeWarsaw}        % Violeta/negro, gradiente, cargado, con todo
+
+\title{%(TITLE)}
+\author{%(AUTHOR)\\ \texttt{%(EMAIL)}}
+\institute{}
+\date{\today}
+
+
+
+
+% Image declarations
+% \pgfdeclaremask{imagemask}{imagemaskfile}
+% \pgfdeclareimage[interpolate=true,mask=imagemask,%
+                 % width=2cm,height=1.3cm]{imagename}{imagename}
+
+
+
+\begin{document}
+
+\frame{\titlepage}
+
+\section<presentation>*{Índice}
+
+\frame
+{
+  \frametitle{Índice}
+  \tableofcontents[part=1]
+}
+
+\AtBeginSubsection[]
+{
+  \frame<handout:0>
+  {
+    \frametitle{Índice}
+    \tableofcontents[current,currentsubsection]
+  }
+}
+
+\part<presentation>{Contents}
+
+\section{Introduction}
+
+\subsection{Disclaimer}
+
+% Regular slide
+\frame[<+->]
+{
+  \frametitle{About this talk}
+  \begin{itemize}
+  \item Some text
+  \end{itemize}
+}
+
+% Two-column, with-image slide
+\frame
+{
+  \frametitle{Some other slide}
+  \begin{columns}
+   \begin{column}{9cm}
+    \begin{itemize}
+    \item Some text
+    \end{itemize}
+   \end{column}
+   \begin{column}{2cm}
+    %\pgfuseimage{some-image}
+   \end{column}
+  \end{columns}
+}
+
+% Some verbatim code slide
+\begin{frame}[fragile]
+  \frametitle{Example code}
+\begin{verbatim}
+  puts "Hello, world"
+\end{verbatim}
+\end{frame}
+
+% Some verbatim code with alerts slide
+\begin{frame}[fragile]
+  \frametitle{Some more example code}
+  \begin{semiverbatim}
+  \alert<2>{class Foo}
+  \alert<3>{   attr_reader :bar}
+  \alert<2>{end}
+  \end{semiverbatim}
+  % Some comments
+  \emph{
+  \only<2>{Class definition}
+  \only<3>{Read-only attribute declaration}}
+\end{frame}
+
+
+\end{document}

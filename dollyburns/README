@@ -1,0 +1,52 @@
+= Introduction
+
+DollyBurns is a plugin-based database dumping utility. It allows to dump
+databases to some directory, with a date stamp, to be able to store several
+copies from different days.
+
+
+= Architecture
+
+DollyBurns has one central configuration file, <tt>/etc/dollyburns.conf</tt>,
+and a special directory, <tt>/etc/dollyburns.d</tt>, where one can store one
+file for each database to dump. Thus, every application can install a
+YAML-formatted DollyBurns configuration file in that directory and have its
+databases dumped automatically.
+
+DollyBurns is usually executed from <tt>cron</tt>. To that effect, a sample
+<tt>cron</tt> file is bundled in the distribution
+(<tt>dollyburns.cron.sample</tt>).  You are free to execute it by hand, or by
+any other methods.
+
+
+= Configuration
+
+The main configuration file, <tt>/etc/dollyburns.conf</tt>, stores general
+information, such as the dump directory, the default compression format, the
+special ".d" directory, an email address to send warnings/errors to, etc. Its
+format is simple YAML, with the following keywords:
+
+[+DumpDir+] Directory to dump databases to.
+[+DefaultDumpFormat+] Default compression format for the dumps.
+[+ConfDir+] Absolute path for the ".d" directory. Usually,
+            <tt>/etc/dollyburns.conf</tt>.
+[+PluginDir+] Absolute path to the plugins. Usually,
+              <tt>/usr/share/dollyburns/plugins</tt>.
+[+NumDumps+] Number of dumps to keep.
+[+FromEmail+] Email address for the +From+ header for notifications/warnings.
+[+Email+] Email address to send notifications/warnings to.
+
+
+== Plugin configuration
+
+Each file in the ".d" directory is a description of a database to dump, in YAML
+format. There are two important keys: +dumpType+ and +params+. The +params+
+value is another hash with plugin-specific configuration. Some hash-keys are
+pretty common, though:
+
+ dumpType: Postgresql
+ params:
+  database: database_name
+  user: admin
+  password: mypassword
+  email: somespecificemail@example.com

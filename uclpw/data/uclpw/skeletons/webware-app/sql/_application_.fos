@@ -1,0 +1,100 @@
+t_entities
+----------
+entity_internal_id              varchar(20) notnull nonempty primary
+entity_id                       varchar(10)
+entity_long_name                varchar(50) 
+entity_brands                   varchar(256)
+entity_local_vat_number         varchar(20)
+entity_address                  varchar(50) 
+entity_city                     varchar(50) 
+entity_province                 varchar(50) 
+entity_postal_code              varchar(10) 
+entity_country                  varchar(20) 
+entity_fax                      varchar(20)
+entity_phone_1                  varchar(20) 
+entity_phone_1_comment          varchar(50)
+entity_phone_2                  varchar(20)
+entity_phone_2_comment          varchar(50)
+entity_mobile_phone             varchar(20)
+entity_start_of_vacations       date      
+entity_end_of_vacations         date
+entity_descr                    varchar(256)
+entity_web                      varchar(100)
+entity_email                    varchar(100)
+entity_bank			varchar(50) 
+entity_bank_address		varchar(256) 
+entity_bank_account_number	varchar(30) 
+entity_card_number		varchar(30) 
+entity_card_type                varchar(10)
+entity_way_of_payment		varchar(30)
+entity_discount	                varchar(30)
+entity_delivery_option		varchar(30)
+entity_credit_limit		varchar(20) 
+entity_credit_limit_currency	int ref(t_units(unit_internal_id))
+entity_accounting_account	varchar(20) 
+entity_active			char(1) default('t') notnull
+entity_type_ref                 char(5) notnull ref(t_entity_types(entity_type_internal_id))
+entity_subtype_ref              char(5) notnull ref(t_entity_subtypes(entity_subtype_internal_id))
+entity_international_vat_number varchar(20)
+entity_social_security_number   varchar(20)
+entity_role                     varchar(30)
+entity_quality                  varchar(30)
+insert_user_ref			varchar(20) ref(t_entities(entity_internal_id)) nonempty notnull
+insert_date                     datetime 
+update_user_ref			varchar(20) ref(t_entities(entity_internal_id)) nonempty notnull
+update_date                     datetime 
+~~~~~~~~~~~~~~~
+#index unique name(i_nombre_alias) columns(nombre_alias)
+
+t_entities_hierarchy
+--------------------
+parent_entity_ref       varchar(20) notnull nonempty ref(t_entities(entity_internal_id)) primary
+child_entity_ref        varchar(20) notnull nonempty ref(t_entities(entity_internal_id)) primary
+relationship_type       varchar(10) notnull nonempty primary
+insert_user_ref		varchar(20) ref(t_entities(entity_internal_id)) nonempty notnull
+insert_date             datetime 
+update_user_ref		varchar(20) ref(t_entities(entity_internal_id)) nonempty notnull
+update_date             datetime 
+
+t_provinces
+-----------
+province_id		varchar(30) notnull nonempty primary
+country_ref		varchar(20) ref(t_countries(country_id)) notnull nonempty
+province_active		char(1) default('t') notnull
+insert_user_ref		varchar(20) ref(t_entities(entity_internal_id)) nonempty notnull
+insert_date             datetime 
+update_user_ref		varchar(20) ref(t_entities(entity_internal_id)) nonempty notnull
+update_date             datetime 
+
+t_cities
+------------
+city_id			varchar(50) notnull nonempty primary
+country_ref		varchar(20) notnull nonempty primary
+city_active		char(1) default('t') notnull
+insert_user_ref		varchar(20) ref(t_entities(entity_internal_id)) nonempty notnull
+insert_date             datetime 
+update_user_ref		varchar(20) ref(t_entities(entity_internal_id)) nonempty notnull
+update_date             datetime 
+~~~~~~~~~~~~~~~
+multifk t_provinces src(province_ref,country_ref) dst(province_id,country_id)
+
+t_countries
+----------------
+country_id			varchar(20) notnull nonempty primary
+country_provinces_complete	bool notnull # are all the provinces for this country in the DB??
+country_cities_complete		bool notnull # the same as above
+country_active			char(1) default('t') bool
+insert_user_ref			varchar(20) ref(t_entities(entity_internal_id)) nonempty notnull
+insert_date                     datetime 
+update_user_ref			varchar(20) ref(t_entities(entity_internal_id)) nonempty notnull
+update_date                     datetime 
+
+t_entity_types
+----------------
+entity_type_internal_id		char(5) primary nonempty notnull
+entity_type_descr		varchar(50) nonempty
+
+t_entity_subtypes
+----------------
+entity_subtype_internal_id	char(5) primary nonempty notnull
+entity_subtype_descr		varchar(50) nonempty

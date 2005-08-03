@@ -1,0 +1,53 @@
+<%args>
+    $usuario => undef
+    $clave   => undef
+    $desconectar => 0
+</%args>
+<%flags>
+    inherit => undef
+</%flags>
+<%perl>
+    $desconectar && $conexion->borrar_sesion;
+
+    my $valida = $conexion->sesion_valida;
+    my $mensaje = "";
+    if (!$valida && $conexion->validar_usuario($usuario, $clave)) {
+        my $res = $conexion->crear_sesion($usuario);
+        if (defined $res) {
+            $valida = 1;
+        }
+        else {
+            $mensaje = "No se pudo crear la sesión";
+        }
+    }
+    elsif ($usuario ne "") {
+        $mensaje = "Usuario o clave no válido";
+    }
+
+    if ($valida) {
+        $m->call_next;
+        $conexion->escribir_sesion;
+    }
+    else {
+        $m->comp("/comp/entrada", url     => $r->path_info,
+                                  mensaje => $mensaje);
+    }
+</%perl>
+<%init>
+    use Config::Tiny;
+    use %(modulo_perl)::Conexion;
+
+    $conf = Config::Tiny->read("/etc/foton/%(proyecto).ini");
+    $conexion = %(modulo_perl)::Conexion->new ($conf->{dir}->{sesiones},
+                                               $conf->{base_datos}->{nombre},
+                                               $conf->{base_datos}->{usuario},
+                                               $conf->{base_datos}->{clave});
+
+    # Corregimos la URL y directorio base, para permitir directorios de
+    # desarrollo del estilo $DIR_BASE.programador
+    my $sufijo = $r->uri;
+    $sufijo =~ s/^$conf->{url}->{base}//;
+    $sufijo =~ s,/.*,,;
+    $conf->{url}->{base} = $conf->{url}->{base} . $sufijo;
+    $conf->{dir}->{base} = $conf->{dir}->{base} . $sufijo;
+</%init>

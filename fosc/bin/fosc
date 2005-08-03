@@ -1,0 +1,51 @@
+#! /usr/bin/ruby -w
+
+require 'fosc'
+require 'foton'
+
+if __FILE__ == $0
+
+    require 'getoptlong'
+
+    opts = GetoptLong.new(
+        [ "--tables",    "-t",            GetoptLong::REQUIRED_ARGUMENT ],
+        [ "--structure-only",    "-s", 0],
+        [ "--integrity-only",    "-i", 0]
+    )
+
+    fosc_options = {
+        'output' => 'all'
+    }
+
+    opts.each do |opt, arg|
+        case opt
+            when '--tables'
+                fosc_options['limit_tables'] = arg.split(',')
+            when '--structure-only'
+                fosc_options['output'] = 'structure'
+            when '--integrity-only'
+                fosc_options['output'] = 'integrity'
+        end
+    end
+
+    fich = ARGV.shift || fail("I need a parameter")
+    driverType = ARGV.shift || 'mysql'
+
+    fc = Fosc::FosConverter.new(fosc_options)
+    fc.convert_file(fich)
+
+    begin
+        require "plugins/#{driverType}"
+        driverClass = filename_to_class(driverType)
+        driver = Fosc::Plugins.const_get(driverClass).new(fosc_options)
+    rescue LoadError, NameError => e
+        puts "Can't load driver '#{driverType}'"
+        raise e
+    end
+
+    begin
+        driver.export(fc.dataBase, *ARGV)
+    rescue ArgumentError => e
+        $stderr.puts "Driver runtime error: #{driverType}: #{e}"
+    end
+end

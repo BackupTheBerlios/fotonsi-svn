@@ -1,0 +1,2 @@
+main_bin = '/usr/bin/uclpw'
+File.rename(main_bin+'.rb', main_bin)
