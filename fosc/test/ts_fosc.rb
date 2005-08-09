@@ -5,6 +5,7 @@ require 'test/tc_db'
 require 'test/tc_fosc'
 require 'test/tc_pg'
 require 'test/tc_converter'
+require 'test/tc_view'
 
 class TS_Fosc
    def self.suite
