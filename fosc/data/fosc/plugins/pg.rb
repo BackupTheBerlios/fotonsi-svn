@@ -17,7 +17,7 @@ module Fosc
          def export(bd)
             foreignKeys = Array.new
             structure = Array.new
-            bd.tables.each do |t|
+            bd.elements('table').each do |t|
                list = Array.new
                extraLines = Array.new
                primaryKeys = Array.new
@@ -84,6 +84,11 @@ module Fosc
                   indexName.nil? or indexName == '' and $stderr.puts "Error: Índice sin nombre en la tabla #{t.name}"
                   fieldNames.nil? or fieldNames == '' and $stderr.puts "Error: Campos vacíos para el índice #{indexName} en la tabla #{t.name}"
                end
+            end # tables
+
+            bd.elements('view').each do |view|
+                fields = view.fields.map { |f| "#{f.name} AS #{f.fieldAlias}" }.join(", ")
+                structure << "CREATE VIEW #{view.name} AS SELECT #{fields} #{view.sqlDefinition};"
             end
 
             # Now we print structure or integrity or both in this order
