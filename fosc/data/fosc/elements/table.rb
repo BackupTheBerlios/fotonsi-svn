@@ -3,7 +3,7 @@ require 'elements/base_element'
 module Fosc
    module Elements
       class Table < BaseElement
-         attr_reader :name, :fields, :attributes
+         attr_reader :fields, :attributes
 
          def initialize(*args)
             super
@@ -84,6 +84,7 @@ module Fosc
                   raise FosFormatError, "Unexpected content: #{line}"
                end
             end
+            self
          end
 
          def clean
