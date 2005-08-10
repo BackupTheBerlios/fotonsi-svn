@@ -115,7 +115,7 @@ if ($action ne 'start' && $action ne 'stop') {
 }
 
 # Set chroot repository directory
-my $chroot_repo = $options{d} || $conf->{repo}->{dir} || do {
+my $chroot_repo = $options{d} || $conf->{path}->{repo} || do {
     print STDERR "You haven't specified a chroot repository\n";
     exit 1;
 };
@@ -148,7 +148,9 @@ if (!-x $chroot_cmd) {
 my $init_level = $action eq 'start' ? 3 : 0;
 foreach my $chroot (@chroots) {
     print "Processing $chroot...\n" unless $options{q};
-    foreach my $init_script (get_init_scripts($chroot, $init_level, $filter)) {
+    my @init_scripts = get_init_scripts($chroot, $init_level, $filter);
+    @init_scripts || print STDERR "WARNING: Can't find any init script in init level $init_level in $chroot\n";
+    foreach my $init_script (@init_scripts) {
         print "Executing $init_script in chroot $chroot...\n" if $options{v};
 	system("$chroot_cmd $chroot $init_script $action") unless $options{n};
     }
