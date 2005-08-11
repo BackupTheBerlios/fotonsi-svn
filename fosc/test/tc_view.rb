@@ -20,5 +20,16 @@ EOD
       assert_equal("FROM t1 LEFT JOIN t2 ON t1.c = t2.c",
                         viewElement.sqlDefinition.strip,
                                                    "View SQL definition")
+      # Check contents
+      fields = [ { :name => 'a', :fieldAlias => nil, :table => 't1' },
+                 { :name => 'b', :fieldAlias => 'b1', :table => 't1' },
+                 { :name => 'b', :fieldAlias => 'b2', :table => 't2' },
+                 { :name => 'c', :fieldAlias => nil, :table => nil } ]
+      fields.each_index do |i|
+         fields[i].each_pair do |a, v|
+            assert_equal(v, viewElement.fields[i].send(a),
+                                                   "Compare #{a} attribute, index #{i}")
+         end
+      end
    end
 end

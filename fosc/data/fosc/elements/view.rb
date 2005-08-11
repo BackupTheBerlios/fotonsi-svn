@@ -38,11 +38,9 @@ module Fosc
                   end
 
                   # Field definition
-                  line =~ /^\s*([a-z0-9_]+\.)?([a-z0-9_]+)(\s+as\s+([a-z0-9_]+)?\s*)?$/i
-                  optTable, fieldName, optAlias = $1, $2, $4
-                  $2 or raise FosFormatError.new("Syntax error in view #{name}",
-                                                 lineNumber,
-                                                 "Can't find field name in #{line}")
+                  line =~ /^\s*(([a-z0-9_]+)\.)?([a-z0-9_]+)(\s+as\s+([a-z0-9_]+)?\s*)?$/i
+                  optTable, fieldName, optAlias = $2, $3, $5
+                  fieldName or raise FosFormatError.new("Syntax error in view #{name}", lineNumber, "Can't find field name in #{line}")
                   @fields << ViewField.new(fieldName, optTable, optAlias)
                elsif state == 'sql_def'
                   # Table definition ends
