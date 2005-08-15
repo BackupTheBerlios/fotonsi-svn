@@ -3,6 +3,7 @@
 
 require 'test/tc_page'
 require 'test/tc_form'
+require 'test/tc_widgets'
 
 class TS_Remix_Widgets
    def self.suite

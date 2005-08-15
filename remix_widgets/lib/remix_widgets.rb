@@ -23,7 +23,7 @@ module RemixWidgets
    class Page
       include RWProperties
 
-      @@delegatedFormMethods = [:render, :add_widget, :add_widgets]
+      @@delegatedFormMethods = [:render, :add_widget, :add_widgets, :widgets]
 
       attr_reader :forms
       attr_accessor :vars
