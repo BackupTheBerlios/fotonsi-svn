@@ -9,31 +9,56 @@ module RemixWidgets
    class DuplicatedWidgetError < StandardError; end
    class WidgetFormatError     < StandardError; end
    class DuplicatedFormError   < StandardError; end
+   class InvalidWidgetError   < StandardError; end
 
+
+   # Mix-in module to manage properties
+   module RWProperties
+      def add_prop(prop, value); @props[prop] += value; end
+      def prop(prop); @props[prop]; end
+   end
 
 
    # Represents the whole webpage, contains one or more forms
    class Page
-      attr_reader :forms, :defaultForm
-      attr_reader :typesLoaded
+      include RWProperties
+
+      @@delegatedFormMethods = [:render, :add_widget, :add_widgets]
+
+      attr_reader :forms
       attr_accessor :vars
+      attr_reader :typesLoaded
 
       def initialize(vars={})
          @vars = vars
          @vars.kind_of? Hash or raise TypeError, "The third argument should be a Hash"
 
-         @defaultForm = 'default'
+         @defaultFormName = 'default'
          @forms = {}
-         create_form(@defaultForm)
+         @props = {}
+         create_form(@defaultFormName)
          # Hook state variables
          @typesLoaded = {}
       end
 
+      # Returns the default form
+      def defaultForm; @forms[@defaultFormName]; end
+
+      # Creates a new form into the page, with the given name
       def create_form(name)
          if @forms.has_key? name
             raise DuplicatedFormError, "Duplicated form '#{name}'"
          end
          @forms[name] = Form.new(self, name)
+      end
+
+      # Delegate some form methods
+      def method_missing(meth, *args, &blk)
+         if @@delegatedFormMethods.include? meth
+            defaultForm.send(meth, *args, &blk)
+         else
+            super
+         end
       end
    end
 
@@ -41,6 +66,8 @@ module RemixWidgets
 
    # Represents a from into a page. Contains widgets.
    class Form
+      include RWProperties
+
       attr_reader :page, :name
       attr_reader :widgets    # Widget Hash (key = :name)
 
@@ -52,6 +79,7 @@ module RemixWidgets
          @page.kind_of? Page or raise TypeError, "The first argument should be a Page"
          @name.kind_of? String or raise TypeError, "The second argument should be a String"
          @widgets = {}
+         @props = {}
          # Hook state variables
          @typesLoaded = {}
       end
@@ -80,6 +108,15 @@ module RemixWidgets
 
          # Execute widget hooks
          execute_widget_hooks(@widgets[widget[:name]])
+      end
+
+      # Renders the given widget
+      def render(widget)
+         if @widgets.has_key? widget
+            @widgets[widget].render
+         else
+            raise InvalidWidgetError, "Widget '#{widget}' is not defined on form '#{name}'"
+         end
       end
 
 
