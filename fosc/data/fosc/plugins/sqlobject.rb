@@ -70,6 +70,7 @@ here2
 
             bd.tables.each do |t|
                primaryKey = t.fields.find { |f| is_primary(f) }
+               primaryKey or raise FosPluginError, "No defined primary key for '#{t.name}'"
 
                puts "class #{t.name}(FotonSQLObject):"
                puts "    _table = '#{t.name}'"

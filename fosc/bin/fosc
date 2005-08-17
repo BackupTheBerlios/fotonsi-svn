@@ -1,7 +1,8 @@
 #! /usr/bin/ruby -w
 
-require 'fosc'
 require 'foton'
+require 'fosc'
+require 'plugins/base_plugin'
 
 if __FILE__ == $0
 
@@ -39,7 +40,7 @@ if __FILE__ == $0
         driverClass = filename_to_class(driverType)
         driver = Fosc::Plugins.const_get(driverClass).new(fosc_options)
     rescue LoadError, NameError => e
-        puts "Can't load driver '#{driverType}'"
+        $stderr.puts "Can't load driver '#{driverType}'"
         raise e
     end
 
@@ -47,5 +48,7 @@ if __FILE__ == $0
         driver.export(fc.dataBase, *ARGV)
     rescue ArgumentError => e
         $stderr.puts "Driver runtime error: #{driverType}: #{e}"
+    rescue Fosc::Plugins::FosPluginError => e
+        $stderr.puts "Error processing #{fich} with plugin '#{driverType}': #{e.class}: #{e}"
     end
 end
