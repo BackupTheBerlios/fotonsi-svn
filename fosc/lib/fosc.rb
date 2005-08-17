@@ -1,8 +1,8 @@
-$: << '/usr/share/fosc'
 require 'fosc/db'
 require 'foton'
 
 $DEBUG = nil
+$LOAD_PATH << '/usr/share/fosc'
 
 module Fosc
    class FosConverter
