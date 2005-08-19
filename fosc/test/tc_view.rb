@@ -32,4 +32,31 @@ EOD
          end
       end
    end
+
+   def test_multiline
+      wherePart = <<EOD
+FROM t_entities JOIN t_nodes ON t_nodes.node_id=t_entities.node_ref
+WHERE
+t_entities.entity_type_ref='Usuario' AND
+t_entities.entity_subtype_ref='Pmr'
+EOD
+      viewElement = Fosc::Elements::View.new('second_view').import(<<EOD)
+t_entities.insert_date
+t_entities.update_user_ref
+t_entities.update_date
+t_nodes.node_id
+t_nodes.node_address
+t_nodes.node_town_ref
+t_nodes.node_municipality_ref
+t_nodes.node_zone_ref
+~~~~~~~~~
+#{wherePart}
+EOD
+      assert_equal(8, viewElement.fields.size,     "Number of view fields")
+      assert_equal('second_view', viewElement.name,"View name")
+      assert_equal(wherePart.strip, viewElement.sqlDefinition.strip,
+                                                   "View SQL definition")
+      assert_equal('t_entities', viewElement.fields.first.table,
+                                                   "First field table name")
+   end
 end
