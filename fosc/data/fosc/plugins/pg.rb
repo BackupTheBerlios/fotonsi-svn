@@ -87,7 +87,10 @@ module Fosc
             end # tables
 
             bd.elements('view').each do |view|
-                fields = view.fields.map { |f| "#{f.name} AS #{f.fieldAlias}" }.join(", ")
+                fields = view.fields.map { |f| (f.table ? "#{f.table}." : "") +
+                                               f.name +
+                                               (f.fieldAlias ? "AS #{f.fieldAlias}" : "")}.
+                                     join(", ")
                 structure << "CREATE VIEW #{view.name} AS SELECT #{fields} #{view.sqlDefinition};"
             end
 
