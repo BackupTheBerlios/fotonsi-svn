@@ -18,7 +18,7 @@ module Fosc
          @dataBase = Fosc::DataBase.new(file)
 
          elementDriver = nil
-         elementLines  = []
+         elementData   = ""
          File.foreach(file) do |line|
             @lineNumber = @lineNumber.next
             line.chomp!
@@ -34,13 +34,13 @@ module Fosc
                   state = ''
                   next
                end
-               elementLines << line
+               elementData += line + "\n"
             else
                # Skip blank lines
                next if line == ''
                # Define the element we have now
-               define_element(elementDriver, elementLines)
-               elementLines = []
+               define_element(elementDriver, elementData)
+               elementData = ""
                # Check if the element name is correct
                line.strip!
                if line !~ /^\s*([a-z_]+)\s*(\(([a-z_]+)\)\s*)?$/i
@@ -70,7 +70,7 @@ module Fosc
          end
 
          # Define the last element
-         define_element(elementDriver, elementLines)
+         define_element(elementDriver, elementData)
 
          lt = @options['limit_tables'] 
          if lt and not lt.empty?
