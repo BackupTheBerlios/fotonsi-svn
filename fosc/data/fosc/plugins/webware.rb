@@ -19,42 +19,42 @@ module Fosc
                     pFile = File.new("form_#{tname}.py", "w")
                     tFile = File.new("form_#{tname}.tmpl", "w")
                     pFile.print <<SALIDA
-        # -*- coding: latin1 -*-
+# -*- coding: latin1 -*-
 
-        '''
-        This module has class definitions for webware form.
+'''
+This module has class definitions for webware form.
 
-        This module was generated #{Time.new.to_s}, and contains the following
-        classes:
+This module was generated #{Time.new.to_s}, and contains the following
+classes:
 SALIDA
                     pFile.print "            * form_#{tname}(#{@options['aplic']}Page)"
                     pFile.print <<SALIDA
 
-        '''
-        from lib.#{@options['aplic'].capitalize} import #{@options['aplic']}Page
+'''
+from lib.#{@options['aplic'].capitalize} import #{@options['aplic']}Page
 
-        class form_#{tname}(#{@options['aplic']}Page):
+class form_#{tname}(#{@options['aplic']}Page):
 
-            def titulo(self):
-                return "#{@options['aplic']}::#{tname}"
+    def titulo(self):
+        return "#{@options['aplic']}::#{tname}"
 
-            def writeContent(self):
+    def writeContent(self):
 
-                #Obtenemos una instancia de Pos
-                iface = self.GetIface()
+        #Obtenemos una instancia de Pos
+        iface = self.GetIface()
 
-                # Definimos los widgets que controlarán los datos del usuario
-                from plantillas.form_#{tname} import form_#{tname}
+        # Definimos los widgets que controlarán los datos del usuario
+        from plantillas.form_#{tname} import form_#{tname}
 
-                #incorporamos el espacio de nombres
-                from MCWidgets import Form, Widgets
+        #incorporamos el espacio de nombres
+        from MCWidgets import Form, Widgets
 
-                t = form_#{tname}()
-                form = Form.Form('f', args = {'trim_spaces': 1})
-                request = self.request()
-                response = self.response()
-                form.define_form_values(request.fields())
-                form.add_widget(Widgets.ToolTips, 'tootips')
+        t = form_#{tname}()
+        form = Form.Form('f', args = {'trim_spaces': 1})
+        request = self.request()
+        response = self.response()
+        form.define_form_values(request.fields())
+        form.add_widget(Widgets.ToolTips, 'tootips')
 
 SALIDA
                     tFile.print <<SALIDA
@@ -119,13 +119,13 @@ SALIDA
          
                         pFile.print <<SALIDA
                         
-                form.add_widget(Widgets.#{tipo}, '#{f.name}',
-                    {
-                        'label':         '#{f.name}:',
-                        'htmlhelp':      'Ayuda_de_#{f.name}',
-                        'tabindex' :     #{contador},
-                        #{formato}
-                    })
+        form.add_widget(Widgets.#{tipo}, '#{f.name}',
+            {
+                'label':         '#{f.name}:',
+                'htmlhelp':      'Ayuda_de_#{f.name}',
+                'tabindex' :     #{contador},
+                #{formato}
+            })
 
 SALIDA
 
@@ -140,14 +140,14 @@ SALIDA
                     end
                     pFile.print <<SALIDA
 
-                form.add_widget(Widgets.ListMultiCol, 'listado',
-                {
-                    'order': {
-                                'key':        '#{t.fields[0].name}',
-                                'reverse':    'n',
-                                'url':        'form_#{tname}',
-                                'extra_args': {} },
-                    'columns': [
+        form.add_widget(Widgets.ListMultiCol, 'listado',
+        {
+            'order': {
+                        'key':        '#{t.fields[0].name}',
+                        'reverse':    'n',
+                        'url':        'form_#{tname}',
+                        'extra_args': {} },
+            'columns': [
 SALIDA
 
                     t.fields.each do |f|
@@ -157,16 +157,16 @@ SALIDA
                     ntabla = tname.capitalize
 
                     pFile.print <<SALIDA
-                               ],
-                               'data': iface.Get#{ntabla}(),
-                    'class': 'basica'
-                })
+                       ],
+                       'data': iface.Get#{ntabla}(),
+            'class': 'basica'
+        })
 SALIDA
 
                 pFile.print <<SALIDA
 
-                t.form = Form.FormTemplate(form)
-                self.write(str(t))
+        t.form = Form.FormTemplate(form)
+        self.write(str(t))
                         
 SALIDA
                 tFile.print <<SALIDA
