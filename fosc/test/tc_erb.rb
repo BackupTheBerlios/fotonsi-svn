@@ -23,6 +23,7 @@ class TC_Erb <Test::Unit::TestCase
                           outputDir)
 
       Find.find(expectedOutputDir) do |f|
+         next if f.split(File::SEPARATOR).include? '.svn'
          unless FileTest.directory? f
             outputFile = f.sub(expectedOutputDir, outputDir)
             assert(FileUtils.compare_file(f, outputFile), "test-erb1: #{f}")
