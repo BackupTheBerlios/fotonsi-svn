@@ -163,8 +163,10 @@ your templates (an ERB template set). You can think of those templates as
 plugins for the +erb+ plugin.
 
 Each ERB template set is a directory, with a file <tt>info.yml</tt> and one
-or more ERB template files. The <tt>info.yml</tt> file has the following
-format:
+or more ERB template files. Those template sets reside in the directory
+<tt>/usr/share/fosc/erb-templates</tt>.
+
+The <tt>info.yml</tt> file has the following format:
 
  files:
    - input: bd.erb
