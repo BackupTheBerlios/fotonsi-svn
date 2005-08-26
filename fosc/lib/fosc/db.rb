@@ -2,10 +2,11 @@
 
 module Fosc
    class DataBase
-      attr_reader :name
+      attr_reader :name, :path
 
-      def initialize(name)
-         @name = name
+      def initialize(path)
+         @path = path
+         @name = File.basename(path, '.fos')
          @elements = []
       end
 
