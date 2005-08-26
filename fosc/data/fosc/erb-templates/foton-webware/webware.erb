@@ -1,0 +1,36 @@
+<%
+   tname = @element.name
+%>
+# -*- coding: latin1 -*-
+
+'''
+This module has class definitions for webware form.
+
+This module was generated <%= Time.new.to_s %>, and contains the following
+classes:
+            * form_<%= tname %>(<%= @db.name %>Page)
+
+from lib.<%= @db.name.capitalize %> import <%= @db.name %>Page
+
+class form_<%= tname %>(<%= @db.name %>Page):
+
+    def titulo(self):
+        return "<%= @db.name %>::<%= tname %>"
+
+    def writeContent(self):
+
+        #Obtenemos una instancia de Pos
+        iface = self.GetIface()
+
+        # Definimos los widgets que controlarán los datos del usuario
+        from plantillas.form_<%= tname %> import form_<%= tname %>
+
+        #incorporamos el espacio de nombres
+        from MCWidgets import Form, Widgets
+
+        t = form_<%= tname %>()
+        form = Form.Form('f', args = {'trim_spaces': 1})
+        request = self.request()
+        response = self.response()
+        form.define_form_values(request.fields())
+        form.add_widget(Widgets.ToolTips, 'tootips')

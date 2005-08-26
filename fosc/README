@@ -149,6 +149,98 @@ The calling syntax is:
 [+pg+] Generates (to stdout) a SQL file for PostgreSQL.
 [+sqlobject+] Generates (to stdout) a Python file with SQLObject classes to
               access the tables.
+[+erb+] Generates (in disk) some files, according to some ERB templates and
+        some rules. It allows you to write templates and configuration for it,
+        instead of writing your own plugin. It should work for most purposes.
+        As it needs some configuration, it has its own documentation section.
+
+
+=== The ERB template
+
+It's a "generic output plugin" that allows you, as a developer, to generate
+content from a FOS definition in a simple way. To use it, you have to configure
+your templates (an ERB template set). You can think of those templates as
+plugins for the +erb+ plugin.
+
+Each ERB template set is a directory, with a file <tt>info.yml</tt> and one
+or more ERB template files. The <tt>info.yml</tt> file has the following
+format:
+
+ files:
+   - input: bd.erb
+     output: test-DATABASE
+     scope: bd
+   - input: element.erb
+     output: test-element-ELEMENT
+     scope: element
+   - input: table.erb
+     output: test-table-TABLE
+     scope: table
+   - input: view.erb
+     output: test-view-ELEMENT
+     scope: view
+
+(That is, a hash with a +files+ key, with a list of hashes as its value, all of
+that in YAML) Each element of the list, that is, each hash with the keys
++input+, +output+ and +scope+, defines one or more output files. The rules are
+as follows:
+
+[input] The ERB template file to use as source.
+[output] The output filename, in which several macros can be substituted with
+         values, depending on the +scope+: if the scope is +bd+, the string
+         "DATABASE" will be substituted with the name of the database in the
+         output file; if the scope if +element+, the string "ELEMENT" will be
+         substituted with the name of the current element; any other value will
+         substitute both "ELEMENT" and the element _type_, uppercased, with the
+         name of the current element (that is, if you specify +view+ as the
+         scope, both strings, "ELEMENT" and "VIEW" will be substituted with
+         each view name).
+[scope] Can be +bd+, +element+ or an element type. In the first case, the input
+        file will be processed _once_, passing the variable <tt>@db</tt> to the
+        template. This is what you want if you only need one file for all the
+        database. In the second case, the input file will be processed once for
+        _every element_ in the database, regardless of its type, and an output
+        file will be created for every one of them. Its name will be different,
+        in general, if you have the string "ELEMENT" as part of the output
+        filename. Two variables, <tt>@element</tt> and
+        <tt>@ELEMENT_TYPE_NAME</tt> (that is, if the current element is a
+        +view+, a variable named <tt>@view</tt>, and so on) will be passed on
+        to the template. The third case is similar to the second, but only
+        elements of the specified type will be processed.
+
+So, in the example <tt>info.yml</tt> above, and the following
+<tt>mydatabase.fos</tt>:
+
+ mytable
+ -------
+ some_field field_type
+
+ myview (view)
+ -------------
+ some_field
+ ~~~~~~
+ FROM mytable WHERE some_field > 5
+
+These files would be generated:
+
+[<tt>test-mydatabase</tt>] From the <tt>bd.erb</tt> template, passing the
+                           variable <tt>@bd</tt>.
+[<tt>test-element-mytable</tt>] From the <tt>element.erb</tt> template, with
+                                the variables <tt>@element</tt> and
+                                <tt>@table</tt> pointing to the object
+                                representing the table +mytable+.
+[<tt>test-element-myview</tt>] Also from the <tt>element.erb</tt> template,
+                               with the variables <tt>@element</tt> and
+                               <tt>@view</tt> pointing to the object
+                               representing the view +myview+.
+[<tt>test-table-mytable</tt>] From the <tt>table.erb</tt> template, with the
+                              variables <tt>@element</tt> and <tt>@table</tt>
+                              pointing to the object representing the table
+                              +mytable+.
+[<tt>test-view-myview</tt>] From the <tt>view.erb</tt> template, with the
+                            variables <tt>@element</tt> and <tt>@view</tt>
+                            pointing to the object representing the view
+                            +myview+.
 
 
 == Output plugin anatomy

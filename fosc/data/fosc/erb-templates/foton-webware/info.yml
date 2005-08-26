@@ -1,0 +1,7 @@
+files:
+   - input: webware.erb
+     output: form_TABLE.py
+     scope: element
+   - input: cheetah.erb
+     output: form_TABLE.tmpl
+     scope: element
