@@ -21,14 +21,14 @@ if __FILE__ == $0
 
     opts.each do |opt, arg|
         case opt
-            when '--tables'
-                fosc_options['limit_tables'] = arg.split(',')
-            when '--structure-only'
-                fosc_options['output'] = 'structure'
-            when '--integrity-only'
-                fosc_options['output'] = 'integrity'
-            when '--aplic-name'
-                fosc_options['aplic'] = arg
+        when '--tables'
+            fosc_options['limit_tables'] = arg.split(',')
+        when '--structure-only'
+            fosc_options['output'] = 'structure'
+        when '--integrity-only'
+            fosc_options['output'] = 'integrity'
+        when '--aplic-name'
+            fosc_options['aplic'] = arg
         end
     end
 
