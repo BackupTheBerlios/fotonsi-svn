@@ -27,27 +27,27 @@ module Fosc
             def export(db, template, basePath='.')
                 conf = get_template_conf(template)
                 FileUtils.mkpath(basePath)
-                conf['files'].each do |f|
+                conf['files'].each do |_file_tpl|
                     ['input', 'output', 'scope'].each do |k|
-                        f.has_key? k or raise FosPluginError, "'#{k}' key not specified"
+                        _file_tpl.has_key? k or raise FosPluginError, "'#{k}' key not specified"
                     end
-                    inputPath = File.join(template_dir(template), f['input'])
+                    inputPath = File.join(template_dir(template), _file_tpl['input'])
                     FileTest.readable? inputPath or raise FosPluginError, "Can't read input file #{inputPath}"
                     erbProcessor = ERB.new(File.read(inputPath))
 
                     # Depending on scope, behave differently
-                    case f['scope']
+                    case _file_tpl['scope']
                     when 'db'
-                        fileName = File.join(basePath, f['output'].sub('DATABASE', db.name))
-                        File.open(fileName, "w") do |f|
+                        fileName = File.join(basePath, _file_tpl['output'].sub('DATABASE', db.name))
+                        File.open(fileName, "w") do |file|
                             @db = db
-                            f.puts erbProcessor.result(binding)
+                            file.puts erbProcessor.result(binding)
                         end
                     else            # All elements or some specific kind
-                        filter = f['scope'] == 'element' ? nil : f['scope']
+                        filter = _file_tpl['scope'] == 'element' ? nil : _file_tpl['scope']
                         db.elements(filter).each do |e|
                             fileName = File.join(basePath,
-                                                 f['output'].sub('ELEMENT', e.name).sub(f['scope'].upcase, e.name))
+                                                 _file_tpl['output'].sub('ELEMENT', e.name).sub(_file_tpl['scope'].upcase, e.name))
                             File.open(fileName, "w") do |file|
                                 @db, @element = db, e
                                 instance_variable_set("@#{e.type}", e)
