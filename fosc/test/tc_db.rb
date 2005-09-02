@@ -9,6 +9,7 @@ class TC_Db <Test::Unit::TestCase
    def setup
       @db = Fosc::DataBase.new('db_test')
    end
+
    def test_tables
       t = Fosc::Elements::Table.new('ttests')
       t.new_field(Fosc::Elements::Table::TableField.new('id', 'id'))
@@ -16,6 +17,17 @@ class TC_Db <Test::Unit::TestCase
 
       assert_equal(1, @db.tables.length)
    end
+
+   def test_access
+      conv = Fosc::FosConverter.new
+      @db = conv.convert_file('test/test-access.fos')
+      assert(@db['some_table'],                    "some_table is defined")
+      assert(@db['some_view'],                     "some_table is defined")
+      assert_raise(Fosc::UnknownElementError) do
+         assert(@db['some_nonexistent_view'],      "access some nonexistent element")
+      end
+   end
+
    def teardown
       @db = nil
    end

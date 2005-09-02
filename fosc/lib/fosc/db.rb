@@ -1,6 +1,9 @@
 # FOSC internal in-memory representation of database information
 
 module Fosc
+   # Raised when trying to access an inexistent element
+   class UnknownElementError < StandardError; end
+
    class DataBase
       attr_reader :name, :path
 
@@ -17,6 +20,11 @@ module Fosc
 
       def new_element(element)
          @elements << element
+      end
+
+      def [](elementName)
+         e = @elements.find {|e| e.name == elementName}
+         e ? e : raise(UnknownElementError, "Can't find element '#{elementName}'")
       end
 
       # Compatibility
