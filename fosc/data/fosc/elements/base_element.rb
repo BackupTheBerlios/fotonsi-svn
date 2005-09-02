@@ -1,3 +1,5 @@
+require 'foton'
+
 module Fosc
    module Elements
       class FosFormatError < RuntimeError

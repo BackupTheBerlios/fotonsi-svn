@@ -2,6 +2,7 @@
 # Licencia: GPL
 
 require 'test/unit'
+require 'fosc'
 require 'fosc/db'
 require 'elements/table'
 
@@ -16,6 +17,10 @@ class TC_Db <Test::Unit::TestCase
       @db.new_table(t)
 
       assert_equal(1, @db.tables.length)
+      assert(t['id'],                            "Name-based field access")
+      assert_raise(Fosc::Elements::UnknownFieldError) do
+         t['nonexistent_field']
+      end
    end
 
    def test_access

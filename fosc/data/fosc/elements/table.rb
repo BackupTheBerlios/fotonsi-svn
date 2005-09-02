@@ -2,6 +2,9 @@ require 'elements/base_element'
 
 module Fosc
    module Elements
+      # When trying to access a non-existent field
+      class UnknownFieldError < StandardError; end
+
       class Table < BaseElement
          attr_reader :fields, :attributes
 
@@ -96,12 +99,19 @@ module Fosc
             @fields << field
          end
 
+         # Returns true if the table has no fields
          def empty?
             @fields.length == 0
          end
 
          def new_attribute(attr)
             @attributes << attr
+         end
+
+         # Name-based field access
+         def [](fieldName)
+            field = @fields.find {|f| f.name == fieldName}
+            field ? field : raise(UnknownFieldError, "Can't find field '#{fieldName}'")
          end
 
 
