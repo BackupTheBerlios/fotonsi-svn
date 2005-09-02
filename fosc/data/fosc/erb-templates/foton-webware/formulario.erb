@@ -1,0 +1,169 @@
+<%
+    tname = @element.name
+    t     = @element
+    nombre_iface = tname[1 .. -1].gsub(/_(.)/) {|s| $1.upcase}
+%>
+# -*- coding: latin1 -*-
+'''
+    Fichero generado automáticamente por fosc
+'''
+
+
+<% #Falta controlar el nombre de la aplicacion
+%>
+from lib.Pmr import pmrPage
+
+class form_<%= tname %>(pmrPage):
+
+    def titulo(self):
+        return "pmr::<%= tname.capitalize %>"
+
+    def writeContent(self):
+
+        #Obtenemos una instancia de interface sqlobject
+        iface = self.GetIface()
+
+        # Definimos los widgets que controlarán los datos del usuario
+        from plantillas.form_<%= tname %> import form_<%= tname %>
+
+        #incorporamos el espacio de nombres
+        from MCWidgets import Form, Widgets
+
+        t = form_<%= tname %>()
+        form = Form.Form('f', args = {'trim_spaces': 1})
+
+
+        #Referencia a los parámetros enviados desde el formualrio
+        request = self.request()
+        response = self.response()
+        form.define_form_values(request.fields())
+
+        form.add_widget(Widgets.ToolTips, 'tooltips', {})
+
+<%
+                    contador = 0
+                    t.fields.each do |f|
+                        contador +=1
+
+                        formato = ""
+                        
+                        if f.respond_to? :dataType
+                            type = f.dataType
+                        else
+                            type= @db[f.table][f.name].dataType
+                        end
+
+                        case type
+                            when 'id', 'int', 'smallint', 'currency'
+                                tipo = "Numeric"
+                            when 'memo'
+                                tipo = "TextArea"
+                                formato = "'cols': '40', 'rows':  '4'"
+                            when 'datetime'
+                                tipo = "DateTimeBox"
+                            when 'date'
+                                tipo = "DateBox"
+                            when 'time'
+                                tipo = "TimeBox"
+                            when 'binary'
+                                tipo = "TextBox"
+                            when 'bool'
+                                tipo = "CheckBox"
+                            when 'char', 'varchar'
+                                if f.respond_to? :dataType
+                                    if f.params == 1
+                                        tipo = "CheckBox"
+                                    else
+                                        tipo = "TextBox"
+                                        formato = "'maxlength': '#{f.dataTypeParam}',"
+                                    end
+                                else
+                                    if @db[f.table][f.name].params == 1
+                                        tipo = "CheckBox"
+                                    else
+                                        tipo = "TextBox"
+                                        formato = "'maxlength': '#{@db[f.table][f.name].dataTypeParam}',"
+                                    end
+                                end
+
+                            else
+                                tipo = "TextBox"
+                        end
+                        
+                        if f.respond_to? :dataType
+                            if f.reference
+                                tipo = "SelectBox"
+                                formato ="'options': [
+                                            ('1', 'Opcion 1'),
+                                            ('2', 'Opcion 2'),
+                                            ('3', 'Opcion 3'),
+                                            ('4', 'Opcion 4')
+                                            ],
+                                            'selected': '1'"
+                            end
+                        else
+                            if @db[f.table][f.name].reference
+                                tipo = "SelectBox"
+                                formato ="'options': [
+                                            ('1', 'Opcion 1'),
+                                            ('2', 'Opcion 2'),
+                                            ('3', 'Opcion 3'),
+                                            ('4', 'Opcion 4')
+                                            ],
+                                            'selected': '1'"
+                            end
+                        end
+
+%>
+
+        form.add_widget(Widgets.<%= tipo %>, '<%= f.name %>',
+            {
+                'label':         '<%= f.name %>:',
+                'htmlhelp':      'Ayuda_de_<%= f.name %>',
+                'tabindex' :     <%= contador %>,
+                <%= formato %>
+            })
+<%
+                    end
+%>
+
+        if request.hasField('Guardar'):
+            values = form.get_form_values()
+            if request.hasField('id'):
+                # Nos llega un id luego estamos guardando una edición
+                id = iface.Update<%= nombre_iface %>(
+                        <% f = t.fields[0] %>
+                            <%= f.name %>   = request.field('id'),
+                        <% t.fields[1 .. -1].each do |f| %>
+                            <%= f.name %>   = values['<%= f.name %>'], <% end %>
+                    )
+            else:
+                # No tenemos id, luego estamos insertando uno nuevo
+                id = iface.Add<%= nombre_iface %>(
+                        <% t.fields[1 .. -1].each do |f| %>
+                            <%= f.name %>   = values['<%= f.name %>'], <% end %>
+                    )
+            self.sendRedirectAndEnd('form_<%= tname %>')
+        
+        elif request.hasField('Borrar'):
+            iface.Deactivate<%= nombre_iface %>(request.field('id'))
+            self.sendRedirectAndEnd('form_<%= tname %>')
+        
+        elif request.hasField('Modificar'):
+            reg = iface.Get<%= nombre_iface %>(request.field('id'))
+            <% t.fields[1 .. -1].each do |f| %>
+            form.get_widget('<%= f.name %>').set_arg('initial_value', str(reg['<%= f.name %>'])) <% end %>
+
+        else: #Será nuevo
+            pass
+
+        #usar el render para depurar errores en los widgets
+        #form.render_widget('nombre_widget')
+        t.form = Form.FormTemplate(form)
+        self.props['header'] = form.get_prop('header')
+        self.write(str(t))
+
+
+    def _boton(self, titulo, row):
+        return ('''<input type="button" title="%(s)s" value="%(s)s" onClick="window.location.href='form_<%= tname %>?%(s)s=1&id=%(r)s'" />''' % {'s': titulo, 'r': row['<%= t.fields[0].name %>']})
+

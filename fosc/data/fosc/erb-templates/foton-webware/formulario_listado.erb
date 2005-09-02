@@ -47,13 +47,10 @@ class form_<%= tname %>(pmrPage):
 
                         formato = ""
                         
-                        puts tname
                         if f.respond_to? :dataType
                             type = f.dataType
-                            puts type
                         else
                             type= @db[f.table][f.name].dataType
-                            puts type
                         end
 
                         case type
@@ -180,6 +177,7 @@ class form_<%= tname %>(pmrPage):
         #usar el render para depurar errores en los widgets
         #form.render_widget('nombre_widget')
         t.form = Form.FormTemplate(form)
+        self.props['header'] = form.get_prop('header')
         self.write(str(t))
 
 

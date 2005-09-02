@@ -1,0 +1,67 @@
+<%
+    tname = @element.name
+    t     = @element
+    nombre_iface = tname[1 .. -1].gsub(/_(.)/) {|s| $1.upcase}
+%>
+# -*- coding: latin1 -*-
+'''
+    Fichero generado automáticamente por fosc
+'''
+
+
+<% #Falta controlar el nombre de la aplicacion
+%>
+from lib.Pmr import pmrPage
+
+class list_<%= tname %>(pmrPage):
+
+    def titulo(self):
+        return "Listado de <%= nombre_iface %>"
+
+    def writeContent(self):
+
+        #Obtenemos una instancia de interface sqlobject
+        iface = self.GetIface()
+
+        # Definimos los widgets que controlarán los datos del usuario
+        from plantillas.list_<%= tname %> import list_<%= tname %>
+
+        #incorporamos el espacio de nombres
+        from MCWidgets import Form, Widgets
+
+        t = list_<%= tname %>()
+        form = Form.Form('f', args = {'trim_spaces': 1})
+
+
+        #Referencia a los parámetros enviados desde el formualrio
+        request = self.request()
+        response = self.response()
+        form.define_form_values(request.fields())
+
+        form.add_widget(Widgets.ListMultiCol, 'lmc',
+        {
+            'order': {
+                        'key':        '<%= t.fields[0].name %>',
+                        'reverse':    'n',
+                        'url':        'form_<%= tname %>',
+                        'extra_args': {} },
+            'columns': [
+                        <% t.fields.each do |f| %>
+                            {'key': '<%= f.name %>', 'name': '<%= f.name %>'}, <% end %>
+                            {'name': '', 'call': lambda r: self._boton('Modificar', r)},
+                            {'name': '', 'call': lambda r: self._boton('Borrar', r)},
+                       ],
+            'data': iface.Get<%= nombre_iface %>(),
+            'class': 'basica'
+        })
+
+        #usar el render para depurar errores en los widgets
+        #form.render_widget('nombre_widget')
+        t.form = Form.FormTemplate(form)
+        self.props['header'] = form.get_prop('header')
+        self.write(str(t))
+
+
+    def _boton(self, titulo, row):
+        return ('''<input type="button" title="%(s)s" value="%(s)s" onClick="window.location.href='form_<%= tname %>?%(s)s=1&id=%(r)s'" />''' % {'s': titulo, 'r': row['<%= t.fields[0].name %>']})
+
