@@ -1,7 +1,19 @@
 files:
    - input: webware.erb
-     output: form_TABLE.py
+     output: form_ELEMENT.py
      scope: element
+#   - input: webware_views.erb
+#     output: form_VIEW.py
+#     scope: view
    - input: cheetah.erb
-     output: form_TABLE.tmpl
+     output: form_ELEMENT.tmpl
      scope: element
+#   - input: cheetah.erb
+#     output: form_VIEW.tmpl
+#     scope: view
+   - input: listado.erb
+     output: list_TABLE.py
+     scope: table
+   - input: cheetah_listado.erb
+     output: list_TABLE.tmpl
+     scope: table

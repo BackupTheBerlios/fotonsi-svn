@@ -1,109 +1,40 @@
 <%
     tname = @element.name
-    t     = @table
+    t     = @element
 
-    puts  = @element.name
-    puts  = @table.name
 %>
 
-        <form method="post">
+        <form $form.form_attributes method="post">
         <fieldset>
         <legend><%= tname %></legend>
         <div class="fondo">
         <table class="basica">
+
 <%
-                    contador = 0
-                    t.fields.each do |f|
-                        contador +=1
-                        type = f.type
-
-                        params = []
-
-                        if ((not f.attributes.include?("notnull")) or f.attributes.include?('default'))
-                            params << "default = DefaultValue"
-                        end
-                        formato = ""
-                        case f.type
-                            when 'id', 'int', 'smallint', 'currency'
-                                    tipo = "Numeric"
-                            when 'memo'
-                                    tipo = "TextArea"
-                                    formato = "'cols': '40', 'rows':  '4'"
-                            when 'datetime'
-                                    tipo = "DateTimeBox"
-                            when 'date'
-                                    tipo = "DateBox"
-                            when 'time'
-                                    tipo = "TimeBox"
-                            when 'binary'
-                                    tipo = "TextBox"
-                            when 'bool'
-                                    tipo = "CheckBox"
-                            else
-                                    tipo = "TextBox"
-                        end
-                        if f.reference
-                            tipo = "SelectBox"
-                            formato ="'options': [
-                                        ('1', 'Opcion 1'),
-                                        ('2', 'Opcion 2'),
-                                        ('3', 'Opcion 3'),
-                                        ('4', 'Opcion 4')
-                                        ],
-                                        'selected': '1'"
-                        end
+        t.fields.each do |f|
+        
 %>
-
-        form.add_widget(Widgets.<%= tipo %>, '<%= f.name %>',
-            {
-                'label':         '<%= f.name %>:',
-                'htmlhelp':      'Ayuda_de_<%= f.name %>',
-                'tabindex' :     <%= contador %>,
-                <%= formato %>
-            })
-                        %>
-
         <tr>
-                <td>\$form.W.<%= f.name %>.get_label</td>
-                <td>\$form.<%= f.name %></td>
+                <td>$form.W.<%= f.name %>.get_label</td>
+                <td width="100%">$form.<%= f.name %></td>
         </tr>
 
 <%
                     end
 %>
 
-        form.add_widget(Widgets.ListMultiCol, 'listado',
-        {
-            'order': {
-                        'key':        '<%= t.fields[0].name %>',
-                        'reverse':    'n',
-                        'url':        'form_<%= tname %>',
-                        'extra_args': {} },
-            'columns': [
-                        <% t.fields.each do |f| %>
-                            {'key': '<%= f.name %>', 'name': '<%= f.name %>'},
-                        <% end %>
-                       ],
-                       'data': iface.Get<%= tname.capitalize %>(),
-            'class': 'basica'
-        })
-
-        t.form = Form.FormTemplate(form)
-        self.write(str(t))
-
-
         <tr>
         <td colspan="2">
         <div id="botonera">
-                <input type="button" value="Nuevo" />
-                <input type="button" value="Modificar" />
+                <input type="submit" value="Guardar" name="Guardar" />
+                <input type="submit" value="Nuevo" name="Nuevo" />
         </div>
         </td>
         </tr>
 
         <tr>
         <td colspan="2">
-                \$form.listado
+                $form.listado
         </td>
         </tr>
 
