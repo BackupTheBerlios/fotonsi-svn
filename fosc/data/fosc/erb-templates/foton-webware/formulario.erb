@@ -92,26 +92,29 @@ class form_<%= tname %>(pmrPage):
                         
                         if f.respond_to? :dataType
                             if f.reference
-                                tipo = "SelectBox"
-                                formato ="'options': [
-                                            ('1', 'Opcion 1'),
-                                            ('2', 'Opcion 2'),
-                                            ('3', 'Opcion 3'),
-                                            ('4', 'Opcion 4')
-                                            ],
-                                            'selected': '1'"
+                                if f.name == "insert_user_ref" or f.name == "update_user_ref"
+                                        tipo = "TextBox"
+                                        formato = "'maxlength': '50',"
+                                else
+                                    tipo = "SelectBox"
+                                    formato ="'options': [
+                                    (str(f['#{f.reference[1]}']), '%(#{f.reference[1]})s' % f)
+                                    for f in iface.Get#{ f.reference[0][1 .. -1].gsub(/_(.)/) {|s| $1.upcase}  }() ],"
+                                end               
                             end
                         else
-                            if @db[f.table][f.name].reference
-                                tipo = "SelectBox"
-                                formato ="'options': [
-                                            ('1', 'Opcion 1'),
-                                            ('2', 'Opcion 2'),
-                                            ('3', 'Opcion 3'),
-                                            ('4', 'Opcion 4')
-                                            ],
-                                            'selected': '1'"
-                            end
+                            rf = @db[f.table][f.name].reference
+                            if rf
+                                if f.name == "insert_user_ref" or f.name == "update_user_ref"
+                                        tipo = "TextBox"
+                                        formato = "'maxlength': '50',"
+                                else
+                                    tipo = "SelectBox"
+                                    formato ="'options': [
+                                    (str(f['#{rf[1]}']), '%(#{rf[1]})s' % f)
+                                    for f in iface.Get#{ rf[0][1 .. -1].gsub(/_(.)/) {|s| $1.upcase} }() ],"
+                                end
+                           end
                         end
 
 %>
@@ -151,9 +154,12 @@ class form_<%= tname %>(pmrPage):
         
         elif request.hasField('Modificar'):
             reg = iface.Get<%= nombre_iface %>(request.field('id'))
-            <% t.fields[1 .. -1].each do |f| %>
-            form.get_widget('<%= f.name %>').set_arg('initial_value', str(reg['<%= f.name %>'])) <% end %>
-
+            <% t.fields[1 .. -1].each do |f|
+               if f.name == "insert_user_ref" or f.name == "update_user_ref" %>
+            form.get_widget('<%= f.name %>').set_arg('initial_value', iface.GetEntities(reg['<%= f.name %>'])['entity_name'])
+            <% else %>
+            form.get_widget('<%= f.name %>').set_arg('initial_value', str(reg['<%= f.name %>']))
+            <% end end %>
         else: #Será nuevo
             pass
 
