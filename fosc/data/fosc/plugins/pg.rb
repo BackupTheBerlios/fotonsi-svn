@@ -23,7 +23,7 @@ module Fosc
                primaryKeys = Array.new
                newSequences = Array.new
                t.fields.each do |c|
-                  type = c.type
+                  type = c.dataType
                   if c.name == "id" or c.attributes.include? "primary"
                      primaryKeys << c.name
                      isPrimary = true

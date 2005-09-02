@@ -107,12 +107,14 @@ module Fosc
 
          # Table field
          class TableField
-            attr_accessor :name, :type, :params, :reference
+            attr_accessor :name, :dataType, :dataTypeParam, :reference
             attr_reader :attributes
+            alias_method :type, :dataType
+            alias_method :params, :dataTypeParam
 
             def initialize(name, type, params = nil)
                @name = name
-               @type = type
+               @dataType = type
                @params = params
                @reference = nil
                @attributes = Array.new

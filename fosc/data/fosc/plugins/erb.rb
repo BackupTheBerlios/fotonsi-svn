@@ -7,11 +7,11 @@ require 'fileutils'
 module Fosc
     module Plugins
         class Erb < BasePlugin
-            TEMPLATE_DIR = '/usr/share/fosc/erb-templates'
+            TEMPLATE_SET_DIR = '/usr/share/fosc/erb-templates'
 
             def template_dir(template)
                 template =~ /^\// ? template :
-                                    File.join(TEMPLATE_DIR, template)
+                                    File.join(TEMPLATE_SET_DIR, template)
             end
 
             def get_template_conf(template)
@@ -24,14 +24,14 @@ module Fosc
                 end
             end
 
-            def export(db, template, basePath='.')
-                conf = get_template_conf(template)
+            def export(db, templateSet, basePath='.')
+                conf = get_template_conf(templateSet)
                 FileUtils.mkpath(basePath)
                 conf['files'].each do |_file_tpl|
                     ['input', 'output', 'scope'].each do |k|
                         _file_tpl.has_key? k or raise FosPluginError, "'#{k}' key not specified"
                     end
-                    inputPath = File.join(template_dir(template), _file_tpl['input'])
+                    inputPath = File.join(template_dir(templateSet), _file_tpl['input'])
                     FileTest.readable? inputPath or raise FosPluginError, "Can't read input file #{inputPath}"
                     erbProcessor = ERB.new(File.read(inputPath))
 

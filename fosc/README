@@ -153,6 +153,8 @@ The calling syntax is:
         some rules. It allows you to write templates and configuration for it,
         instead of writing your own plugin. It should work for most purposes.
         As it needs some configuration, it has its own documentation section.
+        It's called as <tt>fosc file.fos erb template-set-name
+        [output-dir]</tt>.
 
 
 === The ERB template
@@ -164,7 +166,9 @@ plugins for the +erb+ plugin.
 
 Each ERB template set is a directory, with a file <tt>info.yml</tt> and one
 or more ERB template files. Those template sets reside in the directory
-<tt>/usr/share/fosc/erb-templates</tt>.
+<tt>/usr/share/fosc/erb-templates</tt>. The template set name, then (e.g., for
+fosc calling purposes) is the name of the directory: the directory
+<tt>/usr/share/fosc/erb-templates/foo</tt> stores the template set +foo+.
 
 The <tt>info.yml</tt> file has the following format:
 
@@ -204,11 +208,11 @@ as follows:
         _every element_ in the database, regardless of its type, and an output
         file will be created for every one of them. Its name will be different,
         in general, if you have the string "ELEMENT" as part of the output
-        filename. Two variables, <tt>@element</tt> and
-        <tt>@ELEMENT_TYPE_NAME</tt> (that is, if the current element is a
-        +view+, a variable named <tt>@view</tt>, and so on) will be passed on
-        to the template. The third case is similar to the second, but only
-        elements of the specified type will be processed.
+        filename. Three variables, <tt>@db</tt>, <tt>@element</tt> and
+        <tt>@ELEMENT_TYPE_NAME</tt> (that is, <tt>@view</tt>, if the current
+        element is a +view+, and so on) will be passed on to the template. The
+        third case is similar to the second, but only elements of the specified
+        type will be processed.
 
 So, in the example <tt>info.yml</tt> above, and the following
 <tt>mydatabase.fos</tt>:
@@ -254,7 +258,7 @@ according to this simple convention. The name of the plugin, used to pass it as
 a parameter to +fosc+ is simply +my_plugin+.
 
 The class must define a method called +export+, receiving at least one
-parameter, of type +DataBase+. It will receive every extra argument in the
+parameter, of class +DataBase+. It will receive every extra argument in the
 +fosc+ call, so it's better to declare an eat-all second parameter, just in
 case. It also have to define an attribute writer for +options+.  An example of
 simple plugin is:
