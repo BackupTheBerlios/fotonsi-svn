@@ -1,12 +1,9 @@
 # Derechos de autor: Fotón Sistemas Inteligentes 2004
 # Licencia: GPL
 
-require 'test/tc_db'
-require 'test/tc_fosc'
-require 'test/tc_pg'
-require 'test/tc_converter'
-require 'test/tc_view'
-require 'test/tc_erb'
+Dir.entries('test').find_all {|e| e =~ /^tc_.*\.rb/}.each do |e|
+   require "test/#{e}"
+end
 
 class TS_Fosc
    def self.suite

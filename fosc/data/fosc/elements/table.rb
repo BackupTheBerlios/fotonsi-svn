@@ -122,10 +122,10 @@ module Fosc
             alias_method :type, :dataType
             alias_method :params, :dataTypeParam
 
-            def initialize(name, type, params = nil)
+            def initialize(name, type, dataTypeParam = nil)
                @name = name
                @dataType = type
-               @params = params
+               @dataTypeParam = dataTypeParam
                @reference = nil
                @attributes = Array.new
                @attr_values = Hash.new
