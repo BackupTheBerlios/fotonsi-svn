@@ -41,6 +41,7 @@ class form_<%= tname %>(pmrPage):
         form.add_widget(Widgets.ToolTips, 'tooltips', {})
 
 <%
+                    tipos_campos = {}
                     contador = 0
                     t.fields.each do |f|
                         contador +=1
@@ -55,48 +56,59 @@ class form_<%= tname %>(pmrPage):
 
                         case type
                             when 'id', 'int', 'smallint', 'currency'
-                                tipo = "Numeric"
+                                tipos_campos[f.name] = "Numeric"
                             when 'memo'
-                                tipo = "TextArea"
+                                tipos_campos[f.name] = "TextArea"
                                 formato = "'cols': '40', 'rows':  '4'"
                             when 'datetime'
-                                tipo = "DateTimeBox"
+                                tipos_campos[f.name] = "DateTimeBox"
                             when 'date'
-                                tipo = "DateBox"
+                                tipos_campos[f.name] = "DateBox"
                             when 'time'
-                                tipo = "TimeBox"
+                                tipos_campos[f.name] = "TimeBox"
                             when 'binary'
-                                tipo = "TextBox"
+                                tipos_campos[f.name] = "TextBox"
                             when 'bool'
-                                tipo = "CheckBox"
+                                tipos_campos[f.name] = "CheckBox"
                             when 'char', 'varchar'
                                 if f.respond_to? :dataType
                                     if f.params == 1
-                                        tipo = "CheckBox"
+                                        tipos_campos[f.name] = "CheckBox"
                                     else
-                                        tipo = "TextBox"
-                                        formato = "'maxlength': '#{f.dataTypeParam}',"
+                                        if f.dataTypeParam.to_i > 100
+                                            tipos_campos[f.name] = "TextArea"
+                                            formato = "'rows': '6', 'cols':'50'"
+                                        else
+                                            tipos_campos[f.name] = "TextBox"
+                                            formato = "'maxlength': '#{f.dataTypeParam}',"
+                                        end
                                     end
                                 else
-                                    if @db[f.table][f.name].params == 1
-                                        tipo = "CheckBox"
+                                    campo = @db[f.table][f.name]
+                                    if campo.params == 1
+                                        tipos_campos[campo.name] = "CheckBox"
                                     else
-                                        tipo = "TextBox"
-                                        formato = "'maxlength': '#{@db[f.table][f.name].dataTypeParam}',"
+                                        if campo.dataTypeParam.to_i > 100
+                                            tipos_campos[campo.name] = "TextArea"
+                                            formato = "'rows': '6', 'cols':'50'"
+                                        else
+                                            tipos_campos[campo.name] = "TextBox"
+                                            formato = "'maxlength': '#{campo.dataTypeParam}',"
+                                        end
                                     end
                                 end
 
                             else
-                                tipo = "TextBox"
+                                tipos_campos[f.name] = "TextBox"
                         end
                         
                         if f.respond_to? :dataType
                             if f.reference
                                 if f.name == "insert_user_ref" or f.name == "update_user_ref"
-                                        tipo = "TextBox"
+                                        tipos_campos[f.name] = "TextBox"
                                         formato = "'maxlength': '50',"
                                 else
-                                    tipo = "SelectBox"
+                                    tipos_campos[f.name] = "SelectBox"
                                     formato ="'options': [
                                     (str(f['#{f.reference[1]}']), '%(#{f.reference[1]})s' % f)
                                     for f in iface.Get#{ f.reference[0][1 .. -1].gsub(/_(.)/) {|s| $1.upcase}  }() ],"
@@ -106,10 +118,10 @@ class form_<%= tname %>(pmrPage):
                             rf = @db[f.table][f.name].reference
                             if rf
                                 if f.name == "insert_user_ref" or f.name == "update_user_ref"
-                                        tipo = "TextBox"
+                                        tipos_campos[f.name] = "TextBox"
                                         formato = "'maxlength': '50',"
                                 else
-                                    tipo = "SelectBox"
+                                    tipos_campos[f.name] = "SelectBox"
                                     formato ="'options': [
                                     (str(f['#{rf[1]}']), '%(#{rf[1]})s' % f)
                                     for f in iface.Get#{ rf[0][1 .. -1].gsub(/_(.)/) {|s| $1.upcase} }() ],"
@@ -119,7 +131,7 @@ class form_<%= tname %>(pmrPage):
 
 %>
 
-        form.add_widget(Widgets.<%= tipo %>, '<%= f.name %>',
+        form.add_widget(Widgets.<%= tipos_campos[f.name] %>, '<%= f.name %>',
             {
                 'label':         '<%= f.name %>:',
                 'htmlhelp':      'Ayuda_de_<%= f.name %>',
@@ -138,13 +150,21 @@ class form_<%= tname %>(pmrPage):
                         <% f = t.fields[0] %>
                             <%= f.name %>   = request.field('id'),
                         <% t.fields[1 .. -1].each do |f| %>
-                            <%= f.name %>   = values['<%= f.name %>'], <% end %>
+                            <% case tipos_campos[f.name]
+                                when 'SelectBox' %>
+                            <%= f.name %>   = values['<%= f.name %>'][0], 
+                            <% else %>    
+                            <%= f.name %>   = values['<%= f.name %>'], <% end %><% end %>
                     )
             else:
                 # No tenemos id, luego estamos insertando uno nuevo
                 id = iface.Add<%= nombre_iface %>(
-                        <% t.fields[1 .. -1].each do |f| %>
-                            <%= f.name %>   = values['<%= f.name %>'], <% end %>
+                         <% t.fields[1 .. -1].each do |f| %>
+                            <% case tipos_campos[f.name]
+                                when 'SelectBox' %>
+                            <%= f.name %>   = values['<%= f.name %>'][0], 
+                            <% else %>    
+                            <%= f.name %>   = values['<%= f.name %>'], <% end %><% end %>
                     )
             self.sendRedirectAndEnd('form_<%= tname %>')
         
