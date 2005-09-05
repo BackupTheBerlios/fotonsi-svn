@@ -4,6 +4,22 @@
     nombre_iface = tname[1 .. -1].gsub(/_(.)/) {|s| $1.upcase}
 %>
 
+<script>
+
+    function borrar_confirmar(id, nombre)
+    {
+        if(confirm("¿Está seguro de borrar el elemento: "+ nombre +"? "))
+            window.location.href = "form_<%= tname %>?id=" + id + "&Borrar=1";
+    }
+
+    function editar(id)
+    {
+        window.location.href = "form_<%= tname %>?id=" + id + "&Modificar=1";
+        return false;
+    }
+
+</script>
+
 <form method="post">
     <fieldset>
         <legend>Listado de <%= nombre_iface %></legend>

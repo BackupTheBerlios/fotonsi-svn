@@ -63,5 +63,13 @@ class list_<%= tname %>(pmrPage):
 
 
     def _boton(self, titulo, row):
-        return ('''<input type="button" title="%(s)s" value="%(s)s" onClick="window.location.href='form_<%= tname %>?%(s)s=1&id=%(r)s'" />''' % {'s': titulo, 'r': row['<%= t.fields[0].name %>']})
+
+        from MCWidgets.Escape import js_str_escape
+            
+        if titulo=='Borrar':
+            javascript = "borrar_confirmar(%s,'%s')" % (row['<%= t.fields[0].name %>'], js_str_escape(row['<%= t.fields[1].name %>']))
+            return '''<input type="button" title="%(s)s" value="%(s)s" onClick="%(r)s;return false;" />''' % {'s': titulo, 'r': javascript}
+        elif titulo=='Modificar':
+            javascript = "%s" % (row['<%= t.fields[0].name %>'])
+            return '''<input type="button" title="%(s)s" value="%(s)s" onClick="return editar('%(r)s');" />''' % {'s': titulo, 'r': javascript}
 
