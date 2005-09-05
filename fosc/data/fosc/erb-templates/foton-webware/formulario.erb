@@ -16,7 +16,7 @@ from lib.Pmr import pmrPage
 class form_<%= tname %>(pmrPage):
 
     def titulo(self):
-        return "pmr::<%= tname.capitalize %>"
+        return "Formulario de <%= nombre_iface %>"
 
     def writeContent(self):
 
@@ -75,12 +75,18 @@ class form_<%= tname %>(pmrPage):
                                     if f.params == 1
                                         tipos_campos[f.name] = "CheckBox"
                                     else
-                                        if f.dataTypeParam.to_i > 100
-                                            tipos_campos[f.name] = "TextArea"
-                                            formato = "'rows': '6', 'cols':'50'"
-                                        else
+                                        if f.dataTypeParam.to_i <= 10
                                             tipos_campos[f.name] = "TextBox"
-                                            formato = "'maxlength': '#{f.dataTypeParam}',"
+                                            formato = "'maxlength': '#{f.dataTypeParam}', 'class': 'corto',"
+                                        elsif f.dataTypeParam.to_i <= 50
+                                            tipos_campos[f.name] = "TextBox"
+                                            formato = "'maxlength': '#{f.dataTypeParam}', 'class': 'medio',"
+                                        elsif f.dataTypeParam.to_i <= 100
+                                            tipos_campos[f.name] = "TextBox"
+                                            formato = "'maxlength': '#{f.dataTypeParam}', 'class': 'largo',"
+                                        else 
+                                            tipos_campos[f.name] = "TextArea"
+                                            formato = "'rows': '6', 'cols':'50', 'maxlength': '#{f.dataTypeParam}',"
                                         end
                                     end
                                 else
@@ -88,12 +94,18 @@ class form_<%= tname %>(pmrPage):
                                     if campo.params == 1
                                         tipos_campos[campo.name] = "CheckBox"
                                     else
-                                        if campo.dataTypeParam.to_i > 100
-                                            tipos_campos[campo.name] = "TextArea"
-                                            formato = "'rows': '6', 'cols':'50'"
-                                        else
+                                        if campo.dataTypeParam.to_i <= 10
                                             tipos_campos[campo.name] = "TextBox"
-                                            formato = "'maxlength': '#{campo.dataTypeParam}',"
+                                            formato = "'maxlength': '#{campo.dataTypeParam}', 'class': 'corto',"
+                                        elsif campo.dataTypeParam.to_i <= 50
+                                            tipos_campos[campo.name] = "TextBox"
+                                            formato = "'maxlength': '#{campo.dataTypeParam}', 'class': 'medio',"
+                                        elsif campo.dataTypeParam.to_i <= 100 
+                                            tipos_campos[campo.name] = "TextBox"
+                                            formato = "'maxlength': '#{campo.dataTypeParam}', 'class': 'largo',"
+                                        else 
+                                            tipos_campos[campo.name] = "TextArea"
+                                            formato = "'rows': '6', 'cols':'50', 'maxlength': '#{campo.dataTypeParam}',"
                                         end
                                     end
                                 end

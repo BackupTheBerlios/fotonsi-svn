@@ -1,12 +1,12 @@
 <%
     tname = @element.name
     t     = @element
-
+    nombre_iface = tname[1 .. -1].gsub(/_(.)/) {|s| $1.upcase}
 %>
 
         <form $form.form_attributes method="post">
         <fieldset>
-        <legend><%= tname %></legend>
+        <legend>Formulario de <%= nombre_iface %></legend>
         <div class="fondo">
         <table class="basica">
 
