@@ -178,7 +178,7 @@ class form_<%= tname %>(pmrPage):
                             <% else %>    
                             <%= f.name %>   = values['<%= f.name %>'], <% end %><% end %>
                     )
-            self.sendRedirectAndEnd('form_<%= tname %>')
+            self.sendRedirectAndEnd('list_<%= tname %>')
         
         elif request.hasField('Borrar'):
             iface.Deactivate<%= nombre_iface %>(request.field('id'))
