@@ -162,7 +162,7 @@ class form_<%= tname %>(pmrPage):
             'order': {
                         'key':        '<%= t.fields[0].name %>',
                         'reverse':    'n',
-                        'url':        'form_<%= tname %>',
+                        'url':        'list_<%= tname %>',
                         'extra_args': {} },
             'columns': [
                         <% t.fields.each do |f| %>
