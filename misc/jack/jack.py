@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import sys
 
 class jack:
@@ -67,7 +68,7 @@ class jack:
 			
 		f.write (self._htmlBottom)
 		f.close()
-		elf.f.close()
+		f.close()
 
 		# Escribe el fichero principal
 		f = open ("%s.html" % (self.filePrefix), "w")
@@ -96,4 +97,4 @@ ficin = sys.argv[1] # Fichero con el formato intermedio
 fichtml = sys.argv[2] # Prefijo para los ficheros html
 
 bat = jack (ficin, fichtml)
-jack.parse()
+bat.parse()
