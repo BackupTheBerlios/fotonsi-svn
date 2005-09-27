@@ -41,8 +41,8 @@ class jack:
 					lin = lin.split("#")[0].strip()
 		
 			# En caso de una línea en blanco, pasamos de largo
-			elif (len(lin.strip()) == 0):
-				pasar = True
+			#elif (len(lin.strip()) == 0):
+			#	pasar = True
 
 			# Si hay que pasar de la línea se pasa, pero saltar para nada como que no.... leemos otra y rebotamos a otra vuelta del bucle
 			if (pasar == True):
@@ -72,7 +72,14 @@ class jack:
 				f.write ('<tr><td colspan="3">%s</td></tr>\n' % (title))
 
 				# Saltamos a leer otra línea
+				lin = self.f.readline()
 				continue
+
+			# Al recibir una línea en blanco, indica que se rompe el bloque
+			elif (len(lin) == 0):
+				contenido = False
+				f.write (self._htmlBottom)
+				f.close()
 
 			# Cuando está dentro de una batería, va guardando los elementos
 			if (contenido == True):
@@ -80,7 +87,7 @@ class jack:
 				
 				if (len (cols) == 2):
 					cols.append("")
-					
+				
 				f.write ("<tr><td>%s</td><td>%s</td><td>%s</td></tr>\n" % (cols[0], cols[1], cols[2]))
 				
 			lin_ant = lin
