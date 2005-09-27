@@ -72,7 +72,6 @@ class jack:
 				f.write ('<tr><td colspan="3">%s</td></tr>\n' % (title))
 
 				# Saltamos a leer otra línea
-				lin = self.f.readline()
 				continue
 
 			# Al recibir una línea en blanco, indica que se rompe el bloque
