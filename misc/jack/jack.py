@@ -26,8 +26,31 @@ class jack:
 
 		titles = list()
 
+		# Bandera para comprobar si pasamos a leer otra línea
+		pasar = False
 		# Recorre todo el fichero
 		while lin <> "":
+			# Si hay un comentario por ahí...
+			if (lin.find("#") >= 0):
+				
+				# Caso de que esté al principio de la línea, pasamos de largo
+				if (lin[0] == "#"):
+					pasar = True
+				# En caso contrario, eliminamos la parte del comentario
+				else:
+					lin = lin.split("#")[0].strip()
+		
+			# En caso de una línea en blanco, pasamos de largo
+			elif (len(lin.strip()) == 0):
+				pasar = True
+
+			# Si hay que pasar de la línea se pasa, pero saltar para nada como que no.... leemos otra y rebotamos a otra vuelta del bucle
+			if (pasar == True):
+				lin = self.f.readline()
+				pasar = False
+				continue
+
+			# En caso de encon
 			lin = lin.replace("\n", "")
 			
 			# Coge el título cuando llega a --------- y cambia de estado
@@ -48,11 +71,8 @@ class jack:
 				f.write (self._htmlHead)
 				f.write ('<tr><td colspan="3">%s</td></tr>\n' % (title))
 
-			# Si llega una línea en blanco, el contenido se obvia
-			elif (len(lin) == 0):
-				contenido = False
-				f.write (self._htmlBottom)
-				f.close()
+				# Saltamos a leer otra línea
+				continue
 
 			# Cuando está dentro de una batería, va guardando los elementos
 			if (contenido == True):
