@@ -9,61 +9,70 @@ class jack:
 		self.f = open (fic)
 		self.filePrefix = prefix
 
+	def readline (self):
+		"""
+			Lee una línea y extrae los comentarios
+		"""
+
+		lin = self.f.readline()#.replace ("\n", "")
+		if (len(lin) == 0):
+			return -1
+
+		lin = lin.replace ("\n", "").replace ("\r", "")
+
+		# Si hay un comentario por ahí...
+		if (lin.find("#") >= 0):
+			
+			# Caso de que esté al principio de la línea, seguimos leyendo hasta encontrar una línea normal
+			if (lin[0] == "#"):
+				while ((len(lin)>0) and (lin[0] == "#")):
+					lin = self.f.readline()
+			# En caso contrario, eliminamos la parte del comentario
+			else:
+				lin = lin.split("#")[0].strip()
+		return lin
+
 	def parse (self):
-		lin = self.f.readline()
-		lin_ant = ""
-		cont = 0
-		f = None
+		lin = "" # Línea actual
+		lin_ant = "" # Línea anterior a la actual
+		cont = 0 # Contador de los ficheros individuales de pruebas
+		f = None # Fichero donde vamos a grabar las pruebas individuales
+		contenido = False # Bandera que controla si se guarda lo que se está leyendo
 
-		contenido = False
-
+		lin = self.readline() # Lee una línea
+		
+		# La primera línea puede contener la variable URL
+		if (lin.find("URL") >= 0):
+			# Extraemos la url y leemos otra línea
+			URL = lin.split("URL=")[1]
+			existe_URL = True
+			lin = self.readline()
+	
 		# Carga el título
 		maintitle = lin.replace ("\n", "")
 
-		# Lee una línea en blanco y continúa...
-		lin = self.f.readline()
-		lin = self.f.readline()
+		# Lee una línea en blanco y continúa... (el bucle es por si encuentra comentarios por medio)
+		lin = self.readline()
+		lin = self.readline()
 
+		# Lista de los títulos
 		titles = list()
-
-		# Bandera para comprobar si pasamos a leer otra línea
-		pasar = False
+	
 		# Recorre todo el fichero
-		while lin <> "":
-			# Si hay un comentario por ahí...
-			if (lin.find("#") >= 0):
-				
-				# Caso de que esté al principio de la línea, pasamos de largo
-				if (lin[0] == "#"):
-					pasar = True
-				# En caso contrario, eliminamos la parte del comentario
-				else:
-					lin = lin.split("#")[0].strip()
-		
-			# En caso de una línea en blanco, pasamos de largo
-			#elif (len(lin.strip()) == 0):
-			#	pasar = True
-
-			# Si hay que pasar de la línea se pasa, pero saltar para nada como que no.... leemos otra y rebotamos a otra vuelta del bucle
-			if (pasar == True):
-				lin = self.f.readline()
-				pasar = False
-				continue
-
-			# En caso de encon
-			lin = lin.replace("\n", "")
-			
+		while lin <> -1:
 			# Coge el título cuando llega a --------- y cambia de estado
 			if (len(lin)>0) and (lin[0] == "-"):
 				contenido = True
 				title = lin_ant
 
 				# Salta la línea de rayas -> ----------
-				lin = self.f.readline()
+				lin = self.readline() #self.f.readline()
 				cont = cont + 1
 			
 				# Formatea el nombre del fichero (prefijo + nº correlativo)
 				nfic = "%s%d.html" % (self.filePrefix, cont)
+
+				# Guarda el título de la prueba actual en la lista de títulos
 				titles.append ((lin_ant, nfic))
 				
 				# Abre el fichero html para guardar la próxima prueba individual
@@ -77,23 +86,31 @@ class jack:
 			# Al recibir una línea en blanco, indica que se rompe el bloque
 			elif (len(lin) == 0):
 				contenido = False
+
+				# Escribimos el pié de página, cerramos el fichero y seguimos pa'lante
 				f.write (self._htmlBottom)
 				f.close()
 
 			# Cuando está dentro de una batería, va guardando los elementos
-			if (contenido == True):
+			elif (contenido == True):
+				# Sustituye la variable $URL por el valor recogido (si se puso)
+				if ((lin.find("$URL") > 0) and (existe_URL==True)):
+					lin = lin.replace ("$URL", URL)
+
 				cols = lin.split (" ")
 				
+				# Añade una columna adicional en HTML si sólo hay dos en el fichero (por ejemplo, el open sólo lleva dos columnas)
 				if (len (cols) == 2):
 					cols.append("")
 				
 				f.write ("<tr><td>%s</td><td>%s</td><td>%s</td></tr>\n" % (cols[0], cols[1], cols[2]))
-				
-			lin_ant = lin
-			lin = self.f.readline()
 			
+			# Guardamos la línea actual como vieja y leemos otra nueva
+			lin_ant = lin
+			lin = self.readline() #self.f.readline()
+	
+		# Termina el parseo... guarda el pié de página y cierra el fichero
 		f.write (self._htmlBottom)
-		f.close()
 		f.close()
 
 		# Escribe el fichero principal
@@ -116,7 +133,7 @@ class jack:
 
 # Comprueba si los argumentos son correctos
 if (len(sys.argv) <> 3):
-	print "Error\n\nbat.py fichero_formato_intermedio prefijo_salida_html"
+	print "Error\n\njack.py fichero_formato_intermedio prefijo_salida_html"
 	sys.exit(-1)
 
 ficin = sys.argv[1] # Fichero con el formato intermedio 
