@@ -44,7 +44,7 @@ class jack:
 		# La primera línea puede contener la variable URL
 		if (lin.find("URL") >= 0):
 			# Extraemos la url y leemos otra línea
-			URL = lin.split("URL=")[1]
+			URL = lin.split("=")[1]
 			existe_URL = True
 			lin = self.readline()
 	
