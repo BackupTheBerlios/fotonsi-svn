@@ -1,0 +1,8 @@
+URL=http://localhost # URL
+Name of test # A comment
+
+# Another comment
+My first test
+---------
+open $URL
+select id=employes index=1

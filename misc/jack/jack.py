@@ -11,118 +11,121 @@ class jack:
 
 	def readline (self):
 		"""
-			Lee una línea y extrae los comentarios
+			Read a line and removes comments
 		"""
 
-		lin = self.f.readline()#.replace ("\n", "")
+		lin = self.f.readline()
+
+		# If line is empty, return -1 
 		if (len(lin) == 0):
 			return -1
 
+		# Removes \n and \r
 		lin = lin.replace ("\n", "").replace ("\r", "")
 
-		# Si hay un comentario por ahí...
+		# When a comment is found...
 		if (lin.find("#") >= 0):
 			
-			# Caso de que esté al principio de la línea, seguimos leyendo hasta encontrar una línea normal
+			# If it's at the start of line, continue reading until a normal line is find
 			if (lin[0] == "#"):
 				while ((len(lin)>0) and (lin[0] == "#")):
 					lin = self.f.readline()
-			# En caso contrario, eliminamos la parte del comentario
+			# Otherwise, remove the comment from the line
 			else:
 				lin = lin.split("#")[0].strip()
 		return lin
 
 	def parse (self):
-		lin = "" # Línea actual
-		lin_ant = "" # Línea anterior a la actual
-		cont = 0 # Contador de los ficheros individuales de pruebas
-		f = None # Fichero donde vamos a grabar las pruebas individuales
-		contenido = False # Bandera que controla si se guarda lo que se está leyendo
+		lin = "" # Current line
+		lin_prev = "" # Previous line
+		cont = 0 # Counter for tests files
+		f = None # File to save individual tests
+		contenido = False # Flag to control if content si saved to file
 
-		lin = self.readline() # Lee una línea
+		lin = self.readline()
 		
-		# La primera línea puede contener la variable URL
+		# First line of file may have URL var
 		if (lin.find("URL") >= 0):
-			# Extraemos la url y leemos otra línea
+			# Extract URL value and continue reading
 			URL = lin.split("=")[1]
 			existe_URL = True
 			lin = self.readline()
 	
-		# Carga el título
+		# Now we have the title
 		maintitle = lin.replace ("\n", "")
 
-		# Lee una línea en blanco y continúa... (el bucle es por si encuentra comentarios por medio)
+		# Continue to first test...
 		lin = self.readline()
 		lin = self.readline()
 
-		# Lista de los títulos
+		# Titles of individual tests
 		titles = list()
 	
-		# Recorre todo el fichero
+		# Walks along the file
 		while lin <> -1:
-			# Coge el título cuando llega a --------- y cambia de estado
+			# When ---- is found, starts a new test
+			# Previous line is the title of test
 			if (len(lin)>0) and (lin[0] == "-"):
 				contenido = True
-				title = lin_ant
+				title = lin_prev
 
-				# Salta la línea de rayas -> ----------
-				lin = self.readline() #self.f.readline()
+				# Read another line in order to skip dashes line
+				lin = self.readline()
 				cont = cont + 1
 			
-				# Formatea el nombre del fichero (prefijo + nº correlativo)
+				# Formats file name (prefix + counter)
 				nfic = "%s%d.html" % (self.filePrefix, cont)
 
-				# Guarda el título de la prueba actual en la lista de títulos
-				titles.append ((lin_ant, nfic))
+				# Saves title of current test
+				titles.append ((lin_prev, nfic))
 				
-				# Abre el fichero html para guardar la próxima prueba individual
+				# Open html file to save the test
 				f = open (nfic, "w")
 				f.write (self._htmlHead)
 				f.write ('<tr><td colspan="3">%s</td></tr>\n' % (title))
 
-				# Saltamos a leer otra línea
+				# Jump to read another line
 				continue
 
-			# Al recibir una línea en blanco, indica que se rompe el bloque
+			# When an empty line is read, finish current block of test
 			elif (len(lin) == 0):
 				contenido = False
 
-				# Escribimos el pié de página, cerramos el fichero y seguimos pa'lante
+				# Write the bottom of HTML and close the file
 				f.write (self._htmlBottom)
 				f.close()
 
-			# Cuando está dentro de una batería, va guardando los elementos
+			# If we are into a block of test, save the content into HTML
 			elif (contenido == True):
-				# Sustituye la variable $URL por el valor recogido (si se puso)
+				# Replaces $URL var if found
 				if ((lin.find("$URL") > 0) and (existe_URL==True)):
 					lin = lin.replace ("$URL", URL)
 
 				cols = lin.split (" ")
 				
-				# Añade una columna adicional en HTML si sólo hay dos en el fichero (por ejemplo, el open sólo lleva dos columnas)
+				# Append a HTML column to prevent two columns commands (selenium requires three columns on each line of test)
 				if (len (cols) == 2):
 					cols.append("")
 				
 				f.write ("<tr><td>%s</td><td>%s</td><td>%s</td></tr>\n" % (cols[0], cols[1], cols[2]))
 			
-			# Guardamos la línea actual como vieja y leemos otra nueva
-			lin_ant = lin
-			lin = self.readline() #self.f.readline()
+			# Store current line as previous and read a new one
+			lin_prev = lin
+			lin = self.readline()
 	
-		# Termina el parseo... guarda el pié de página y cierra el fichero
+		# Parsing is finished... write HTLM foot and close the file
 		f.write (self._htmlBottom)
 		f.close()
 
-		# Escribe el fichero principal
+		# Writes the main file
 		f = open ("%s.html" % (self.filePrefix), "w")
 
 		s = self._htmlHead
-
-		# La primera línea será el título
+		
+		# First line of file will be the title
 		s = s + '<tr><td colspan="3">%s</td></tr>\n' % (maintitle)
-	
-		# Crea la columna del fichero principal a partir de los títulos (each[0]) y 
-		# el fichero asociado (each[0])
+
+		# Creates the main column from the titles (each[0]) and associated file (each[1])
 		for each in titles:
 			s = s + '<tr><td><a href="%s">%s</a></td></tr>\n' % (each[1], each[0])
 
@@ -131,13 +134,13 @@ class jack:
 		f.write (s)
 		f.close()
 
-# Comprueba si los argumentos son correctos
+# Check if arguments are right
 if (len(sys.argv) <> 3):
 	print "Error\n\njack.py fichero_formato_intermedio prefijo_salida_html"
 	sys.exit(-1)
 
-ficin = sys.argv[1] # Fichero con el formato intermedio 
-fichtml = sys.argv[2] # Prefijo para los ficheros html
+ficin = sys.argv[1] # Middle format
+fichtml = sys.argv[2] # Prefix for HTML files
 
 bat = jack (ficin, fichtml)
 bat.parse()

@@ -1,5 +1,2 @@
-La batería de pruebas la hace realmente selenium, pero hay que copiarlo dentro del directorio de la misma aplicación.
-
-El jack.py sirve para crear las baterías de pruebas a partir de un formato intermedio, más fácil que escribir los ficheros a mano para selenium.
-
-Dentro del fichero bateria_ejemplo.txt hay un ejemplo de formato intermedio.
+Jack creates a battery of tests for selenium from a middle format file (it's easier than writing individuals HTML files).
+In order to get all working, selenium directory must be placed into a site *accesible* by your browser.

@@ -1,6 +1,0 @@
-Nombre de la batería de pruebas
-
-Bateria1
----------
-open foo.html
-select uno index=1
