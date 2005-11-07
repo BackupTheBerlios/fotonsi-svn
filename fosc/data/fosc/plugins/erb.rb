@@ -1,4 +1,4 @@
-# Clase adaptadora para PostgreSQL
+# ERB plugin for FOSC
 
 require 'plugins/base_plugin'
 require 'erb'
