@@ -1,7 +1,7 @@
 # FOSC internal in-memory representation of database information
 
 module Fosc
-   # Raised when trying to access an inexistent element
+   # Raised when trying to access a non existent element
    class UnknownElementError < StandardError; end
 
    class DataBase
