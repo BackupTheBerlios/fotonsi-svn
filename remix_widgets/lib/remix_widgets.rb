@@ -1,5 +1,5 @@
-# RemixWidgets is an advanced web widget system that integrates the client
-# side with the server side of widgets
+# RemixWidgets is an advanced web widget system that integrates client
+# and server side widgets
 
 require 'foton'
 require 'remix_widgets/widgets'
@@ -64,7 +64,7 @@ module RemixWidgets
 
 
 
-   # Represents a from into a page. Contains widgets.
+   # Represents a form as a page. Contains widgets.
    class Form
       include RWProperties
 
