@@ -1,5 +1,6 @@
 # Clase adaptadora para PostgreSQL
 
+require 'plugins/base_plugin'
 require 'erb'
 require 'yaml'
 require 'fileutils'
