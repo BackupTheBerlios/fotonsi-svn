@@ -11,7 +11,7 @@ class jack:
 
 	def readline (self):
 		"""
-			Read a line and removes comments
+			Read a line and remove comments
 		"""
 
 		lin = self.f.readline()
@@ -26,7 +26,7 @@ class jack:
 		# When a comment is found...
 		if (lin.find("#") >= 0):
 			
-			# If it's at the start of line, continue reading until a normal line is find
+			# If it's at the start of line, continue reading until a normal line is found
 			if (lin[0] == "#"):
 				while ((len(lin)>0) and (lin[0] == "#")):
 					lin = self.f.readline()
@@ -95,7 +95,7 @@ class jack:
 				f.write (self._htmlBottom)
 				f.close()
 
-			# If we are into a block of test, save the content into HTML
+			# If we are inside a test block, save the content into HTML
 			elif (contenido == True):
 				# Replaces $URL var if found
 				if ((lin.find("$URL") > 0) and (existe_URL==True)):
@@ -103,7 +103,7 @@ class jack:
 
 				cols = lin.split (" ")
 				
-				# Append a HTML column to prevent two columns commands (selenium requires three columns on each line of test)
+				# Append a HTML column to prevent two column commands (selenium requires three columns on each test line)
 				if (len (cols) == 2):
 					cols.append("")
 				
@@ -113,7 +113,7 @@ class jack:
 			lin_prev = lin
 			lin = self.readline()
 	
-		# Parsing is finished... write HTLM foot and close the file
+		# Parsing is finished... write HTML footer and close the file
 		f.write (self._htmlBottom)
 		f.close()
 
