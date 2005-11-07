@@ -1,7 +1,7 @@
 = Introduction
 
-DollyBurns is a plugin-based database dumping utility. It allows to dump
-databases to some directory, with a date stamp, to be able to store several
+DollyBurns is a plugin-based database dumping utility. It allows databases to
+be dumped to some directory, with a date stamp, to be able to store several
 copies from different days.
 
 
