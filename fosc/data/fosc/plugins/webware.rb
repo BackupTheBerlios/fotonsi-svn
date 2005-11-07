@@ -1,4 +1,4 @@
-# Clase adaptadora para PostgreSQL
+# WebWare plugin for FOSC
 
 $types = { "id"       => "IntCol",
            "int"      => "IntCol",
@@ -24,8 +24,8 @@ module Fosc
 '''
 This module has class definitions for webware form.
 
-This module was generated #{Time.new.to_s}, and contains the following
-classes:
+Generated at #{Time.new.to_s}.
+Contains the following classes:
 SALIDA
                     pFile.print "            * form_#{tname}(#{@options['aplic']}Page)"
                     pFile.print <<SALIDA
