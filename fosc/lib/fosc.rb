@@ -51,7 +51,7 @@ module Fosc
                # New element begins
                elementName, elementType = $1, $3 || 'table'
                state = 'element'
-               # Dinamically load the element driver
+               # Dynamically load the element driver
                begin
                   require "elements/#{elementType}"
                   className = filename_to_class(elementType)
@@ -74,7 +74,7 @@ module Fosc
 
          lt = @options['limit_tables'] 
          if lt and not lt.empty?
-            $stderr.puts "WARNING: Non-defined tables: " + lt.join(", ")
+            $stderr.puts "WARNING: Undefined tables: " + lt.join(", ")
          end
 
          @dataBase
