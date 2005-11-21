@@ -1,21 +1,29 @@
 = FOS-DB and FOSC
 
 FOS-DB stands for Foton Own Standard for DataBases, and is an _extremely_
-simple format to describe database tables. Its main aim is to serve as a
-documentation format, as well as master format to generate database-related
-files, such as SQL structure dumps, persistence classes, etc. It's a kind of
-compilable documentation format.
+simple format to describe database "elements" (tables, views, and so on). Its
+main aim is to serve as a documentation format, as well as master format to
+generate database-related files, such as SQL structure dumps, persistence
+classes, etc. It's a kind of compilable documentation format.
 
 FOSC stands for FOS Converter, and is a little Ruby utility to generate content
 from a FOS-formatted file. It makes use of plugins to handle different output
-formats.
+formats, and input plugins to handle every database element.
 
 
 = The FOS(-DB) format
 
-It's very simple and readable, and _line-based_. Each table begins with its
-name in a line, three or more dashes in the following line, and one or more
-field definition lines from there on.
+It's very simple and readable, and _line-based_. Each file consists of
+elements, which in turn consist of content lines until the next blank line.
+Each element begins with its name and the optional element type inside
+parentheses ("table" is the default), and then a dash line. After that, it
+has its own syntax until the next blank line.
+
+Comments can be written with "<tt>#</tt>" or "<tt>-</tt><tt>-</tt>" (until the
+end of the line). Lines with comments _don't_ count as blank lines, so you can
+also use them to break up and clarify the element layout.
+
+== Tables
 
 Each line is composed of the column name, the column type, and zero or more
 attributes. Everything is space-separated.
@@ -24,19 +32,14 @@ Some column types and attributes can have a parameter, specified inside
 parentheses, without trailing whitespace (i.e.: '<tt>varchar(50)</tt>',
 correct; '<tt>varchar (50)</tt>', incorrect).
 
-There *must* be at least one blank line between tables.
-
-Comments can be written with "<tt>#</tt>" or "<tt>-</tt><tt>-</tt>" (until the
-end of the line).
-
 An optional special block can be specified at the end of the tables (without
 leading blank lines), separated by a line consisting of one or more tilde
 characters («~»). In this block table-wise attributes can be specified. Each
-attribute consist of a name and zero or more properties, separated by
+attribute consists of a name and zero or more properties, separated by
 whitespace. The properties, as column attributes, can have a parameter inside
 parentheses.
 
-== Example
+=== Example
 
  table_name
  ----------
@@ -57,7 +60,7 @@ parentheses.
  index unique name(index_name) columns(field1,field2)
 
 
-== Field types
+=== Field types
 
 There are only a handful of "standard" field types in FOS. You can specify
 whatever you want, but you will receive a warning and it will pause for a
@@ -80,7 +83,7 @@ second for each one.
 [+bool+] Boolean value (true/false)
 
 
-== Field attributes
+=== Field attributes
 
 There are a number of standard attributes that every plugin should support. You
 can make up other attributes if you wish, for plugin-dependent "tips".
@@ -103,7 +106,7 @@ can make up other attributes if you wish, for plugin-dependent "tips".
 [+only_values+] Comma-separated list of the only values the field can have.
 
 
-== Table attributes
+=== Table attributes
 
 Standard table attributes, for the optional block at the end of each table:
 
@@ -119,6 +122,49 @@ Standard table attributes, for the optional block at the end of each table:
           The +name+ property is the index name, and the optional property
           +unique+ indicates that the index is +UNIQUE+.
 
+== Views
+
+Each view has at least two sections, separated by a tilde («~») line. The first
+one being the column definition one, and the second one being the SQL
+definition one. Note that you _always_ have to define the element type +view+
+next to the view name (see the example).
+
+The column definition section consists of one line per each column in the view.
+Each column has at least a column name, but can also contain the table it's in
+(in the form of table.column), and an optional alias.
+
+The SQL definition section consists of the SQL chunk beginning with the +FROM+
+clause, until the end of the query.
+
+There's a final, optional section, again separated by a tilde line, with the
+view attributes. Right now there's only one defined: the +distinct+ attribute.
+
+=== Example
+
+ view_name (view)
+ ----------------
+ fieldname1
+ some_table.fieldname2
+ fieldname3 AS fn3
+ table2.fieldname4 AS t2fn4
+ ~~~~~~~~
+ FROM some_table, table2, table3
+ 
+ view2 (view)
+ ------------
+ fieldname22
+ ~~~~~~~~
+ FROM table6 WHERE fieldname11 > 5
+ ~~~~~~~~
+ distinct
+
+The first one would produce something like:
+
+ CREATE VIEW view_name AS SELECT fieldname1, some_table.fieldname2, fieldname3 AS fn3, table2.fieldname4 AS t2fn4 FROM some_table, table2, table3;
+
+The second one would produce something like:
+
+ CREATE VIEW view2 AS SELECT DISTINCT fieldname22 FROM table6 WHERE fieldname11 > 5;
 
 
 = The FOS Converter

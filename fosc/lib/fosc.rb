@@ -91,7 +91,7 @@ module Fosc
                   lt and lt.delete(driver.name)
                   @dataBase.new_element(driver)
                end
-            rescue Fosc::Elements::FosFormatError => e
+            rescue Fosc::Elements::FosSyntaxError => e
                $stderr.puts "Error processing element '#{driver.name}' (of type '#{driver.type}'):"
                $stderr.puts "#{@lineNumber+e.line-1}: #{e.msg}"
                $stderr.puts e.details if e.details

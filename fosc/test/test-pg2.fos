@@ -1,0 +1,7 @@
+attr_view (view)
+----------------
+some_col
+~~~~~~~~
+FROM some_table ORDER BY some_other_col
+~~~~~~
+distinct

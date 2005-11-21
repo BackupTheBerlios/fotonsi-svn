@@ -36,7 +36,7 @@ module Fosc
                      chunks[1] = "id"
                   end
                   if chunks[1].nil?
-                     raise FosFormatError.new("Syntax error in table #{name}",
+                     raise FosSyntaxError.new("Syntax error in table #{name}",
                                               lineNumber,
                                               "You have to specify the type for field #{chunks[0]}")
                   end
@@ -73,7 +73,7 @@ module Fosc
                   # Table attribute definition
                   chunks = line.split(' ')
                   tmp = TableAttribute.new(chunks[0])
-                  chunks[1..chunks.length].each do |t|
+                  chunks[1..-1].each do |t|
                      if t =~ /^([a-z0-9_]+)\((([^()]+|\([^()]*\))*)\)/i
                         tmp.new_prop($1, $2)
                      else
@@ -84,7 +84,7 @@ module Fosc
                else
                   # Skip blank lines
                   next if line == ''
-                  raise FosFormatError, "Unexpected content: #{line}"
+                  raise FosSyntaxError, "Unexpected content: #{line}"
                end
             end
             self
@@ -147,8 +147,8 @@ module Fosc
             attr_reader :name, :props
 
             def initialize(name)
-               @name = name
-               @props  = Hash.new
+               @name  = name
+               @props = {}
             end
 
             def new_prop(name, value=nil)

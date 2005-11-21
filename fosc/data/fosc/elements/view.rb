@@ -17,12 +17,13 @@ require 'elements/base_element'
 module Fosc
    module Elements
       class View < BaseElement
-         attr_reader :fields, :sqlDefinition
+         attr_reader :fields, :sqlDefinition, :attributes
 
          def initialize(*args)
             super
             @sqlDefinition = ""
-            @fields  = []
+            @fields        = []
+            @attributes    = []
          end
 
          def import(data)
@@ -32,7 +33,7 @@ module Fosc
                lineNumber = lineNumber.next
                if state == 'fields'
                   # «Extra» block begins
-                  if line =~ /^\s*~+\s*$/
+                  if line =~ TILDE_SEPARATOR_LINE
                      state = 'sql_def'
                      next
                   end
@@ -40,23 +41,33 @@ module Fosc
                   # Field definition
                   line =~ /^\s*(([a-z0-9_]+)\.)?([a-z0-9_]+)(\s+as\s+([a-z0-9_]+)?\s*)?$/i
                   optTable, fieldName, optAlias = $2, $3, $5
-                  fieldName or raise FosFormatError.new("Syntax error in view #{name}", lineNumber, "Can't find field name in #{line}")
+                  fieldName or raise FosSyntaxError.new("Syntax error in view #{name}", lineNumber, "Can't find field name in #{line}")
                   @fields << ViewField.new(fieldName, optTable, optAlias)
                elsif state == 'sql_def'
-                  # Table definition ends
+                  # Definition end
                   if line == ''
                      state = ''
+                     next
+                  elsif line =~ /^\s*~+\s*$/
+                     state = 'options'
                      next
                   end
                   # SQL definition
                   @sqlDefinition += line
+               elsif state == 'options'
+                  # Definition end
+                  if line == ''
+                     state = ''
+                     next
+                  end
+                  @attributes << ElementAttribute.import(line)
                else
                   # Skip blank lines
                   next if line == ''
-                  raise FosFormatError, "Unexpected content: #{line}"
+                  raise FosSyntaxError, "Unexpected content: #{line}"
                end
             end
-            @sqlDefinition != '' or raise FosFormatError, "View definition without SQL definition"
+            @sqlDefinition != '' or raise FosSyntaxError, "View definition without SQL definition"
             self
          end
 

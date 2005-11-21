@@ -59,4 +59,17 @@ EOD
       assert_equal('t_entities', viewElement.fields.first.table,
                                                    "First field table name")
    end
+
+   def test_attributes
+      viewElement = Fosc::Elements::View.new('attr_view').import(<<EOD)
+a
+~~~~~~~~~
+FROM b WHERE c = 'f'
+~~~~
+distinct
+EOD
+      assert_equal(1, viewElement.attributes.size, "Number of attributes")
+      assert_equal('distinct', viewElement.attributes.first.name,
+                                                   "Attribute name")
+   end
 end

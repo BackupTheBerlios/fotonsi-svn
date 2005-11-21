@@ -91,7 +91,8 @@ module Fosc
                                                f.name +
                                                (f.fieldAlias ? " AS #{f.fieldAlias}" : "")}.
                                      join(", ")
-                structure << "CREATE VIEW #{view.name} AS SELECT #{fields} #{view.sqlDefinition};"
+                optionalDistinct = view.attributes.find {|a| a.name == 'distinct'} ? 'DISTINCT' : ''
+                structure << "CREATE VIEW #{view.name} AS SELECT #{optionalDistinct} #{fields} #{view.sqlDefinition};"
             end
 
             # Now we print structure or integrity or both in this order
