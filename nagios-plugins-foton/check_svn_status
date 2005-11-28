@@ -1,0 +1,168 @@
+#!/bin/bash
+
+$Id$
+
+PROGNAME=`/usr/bin/basename $0`
+PROGPATH=`echo $0 | /bin/sed -e 's,[\\/][^\\/][^\\/]*$,,'`
+REVISION=`echo '$Revision$' | /bin/sed -e 's/[^0-9.]//g'`
+
+. $PROGPATH/utils.sh
+
+ECHO="echo -e"
+
+
+
+print_usage() {
+    echo "Usage: $PROGNAME -p|--path PATH [-u|--username USERNAME] [-w|--password PASSWORD] [-v]"
+    echo "Usage: $PROGNAME [-h|--help]"
+    echo "Usage: $PROGNAME [-V|--version]"
+}
+
+print_help() {
+    echo "$PROGNAME: Version $REVISION"
+    echo "Svn status plugin for Nagios"
+    echo ""
+    echo "This plugin tests the status of a working copy of a svn directory (or repository)."
+    print_usage
+}
+
+
+
+# Make sure the correct number of command line
+# arguments have been supplied
+
+if [ $# -lt 1 ]; then
+    print_help
+    exit $STATE_UNKNOWN
+fi
+
+
+# Parse the command line arguments
+
+#path=$1
+exitstatus=$STATE_WARNING #default
+verbose=0 #default
+
+while test -n "$1"; do
+    case "$1" in
+        --help)
+            print_help
+            exit $STATE_UNKNOWN
+            ;;
+        -h)
+            print_help
+            exit $STATE_UNKNOWN
+            ;;
+        --version)
+            print_help
+            exit $STATE_UNKNOWN
+            ;;
+        -V)
+            print_help
+            exit $STATE_UNKNOWN
+            ;;
+        --verbose)
+            verbose=1
+            ;;
+        -v)
+            verbose=1
+            ;;
+        -p)
+            path=$2
+            shift
+            ;;
+        --path)
+            path=$2
+            shift
+            ;;
+        -u)
+            username=$2
+            shift
+            ;;
+        --username)
+            username=$2
+            shift
+            ;;
+        -w)
+            password=$2
+            shift
+            ;;
+        --password)
+            password=$2
+            shift
+            ;;
+        *)
+            echo "Unknown argument: $1"
+            print_help
+            exit $STATE_UNKNOWN
+            ;;
+    esac
+    shift
+done
+
+# If the path directory doesn't exist, exit
+
+if [ ! -d $path ]; then
+    $ECHO "Error: Path $path does not exist!"
+    exit $STATE_UNKNOWN
+else
+    if [ $verbose = 1 ]; then
+        $ECHO "cd $path"
+    fi
+    cd $path
+fi
+
+
+
+COMMAND="svn status -u --non-interactive"
+
+if [ $username ]; then
+    COMMAND="$COMMAND --username $username"
+fi
+
+if [ $password ]; then
+    COMMAND="$COMMAND --password $password"
+fi
+
+if [ $verbose = 1 ]; then
+    $ECHO "$COMMAND"
+fi
+
+
+# Ejecuto el comando
+comando=`$COMMAND 2>&1`
+
+# Si hay error al ejecutar el comando 
+if [ $? != 0 ]; then
+    $ECHO "$comando"
+    exit $STATE_CRITICAL
+fi
+
+
+if [ $verbose = 1 ]; then
+    $ECHO "$comando"
+fi
+
+
+$ECHO "$comando" | grep '^M' &> /dev/null
+if [ $? = 0 ]; then
+    $ECHO "Warning: modified files (M)."
+    exit $STATE_WARNING
+fi
+
+$ECHO "$comando" | grep '^?' &> /dev/null
+if [ $? = 0 ]; then
+    $ECHO "Warning: files not included (?)."
+    exit $STATE_WARNING
+fi
+
+$ECHO "$comando" | grep '^[A|C|D|G|R|X|!|~]' &> /dev/null
+if [ $? = 0 ]; then
+    $ECHO "Warning: generic warning (A|C|D|G|R|X|!|~)."
+    exit $STATE_WARNING
+fi
+
+$ECHO "Files not modified. No actualizations left."
+exit $STATE_OK
+
+

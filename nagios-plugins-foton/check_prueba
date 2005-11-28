@@ -1,0 +1,100 @@
+#!/bin/bash
+
+PROGNAME=`/usr/bin/basename $0`
+PROGPATH=`echo $0 | /bin/sed -e 's,[\\/][^\\/][^\\/]*$,,'`
+REVISION=`echo '$Revision: 0.1 $' | /bin/sed -e 's/[^0-9.]//g'`
+
+. $PROGPATH/utils.sh
+
+# Versión inicial
+
+#case "$1" in
+#	ok)		echo "Estado correcto."
+#			exit 0
+#			;;
+#	warning)	echo "Estado warning."
+#			exit 1
+#			;;
+#	critical)	echo "Estado crítico."
+#			exit 2
+#			;;
+#	unknown)	echo "Estado inalcanzable."
+#			exit -1
+#			;;
+#esac
+
+
+print_usage() {
+    echo "Usage: $PROGNAME [ok|warning|critical|unknown|dependent]"
+    echo "Usage: $PROGNAME [-h|--help]"
+    echo "Usage: $PROGNAME [-V|--version]"
+}
+
+print_help() {
+    echo "$PROGNAME: Version $REVISION"
+    echo "Dummy plugin for Nagios"
+    echo ""
+    print_usage
+}
+
+
+
+# Make sure the correct number of command line
+# arguments have been supplied
+
+if [ $# -lt 1 ]; then
+    print_help
+    exit $STATE_UNKNOWN
+fi
+
+
+# Parse the command line arguments
+
+while test -n "$1"; do
+    case "$1" in
+        --help)
+            print_help
+            exit $STATE_UNKNOWN
+            ;;
+        -h)
+            print_help
+            exit $STATE_UNKNOWN
+            ;;
+        --version)
+            print_help
+            exit $STATE_UNKNOWN
+            ;;
+        -V)
+            print_help
+            exit $STATE_UNKNOWN
+            ;;
+        ok)
+            echo "Estado correcto."
+            exit $STATE_OK
+            ;;
+        warning)
+            echo "Estado warning."
+            exit $STATE_WARNING
+            ;;
+        critical)
+            echo "Estado critical."
+            exit $STATE_CRITICAL
+            ;;
+        unknown)
+            echo "Estado desconocido."
+            exit $STATE_UNKNOWN
+            ;;
+        dependent)
+            echo "Estado dependiente."
+            exit $STATE_DEPENDENT
+            ;;
+        *)
+            echo "Unknown argument: $1"
+            print_help
+            exit $STATE_UNKNOWN
+            ;;
+    esac
+    shift
+done
+
+
