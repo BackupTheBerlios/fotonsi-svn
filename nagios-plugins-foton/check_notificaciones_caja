@@ -1,13 +1,26 @@
+# URL para descargar el fichero con los datos de la promoción
 URLFILE=$1
+
+# Usuario y password para autentificar por HTTP
 USER=$2
 PASS=$3
+
+# Fichero nuevo (temporal) para almacenar el fichero descargado de $URLFILE y contrastarlo con el que provee el usuario
 NEWFILE="$4.new"
+
+# Fichero que provee el usuario (contiene el estado de la última notificación)
 OLDFILE=$4
 
+# Nombre del proceso en ejecución
 PROGNAME=`/usr/bin/basename $0`
+
+# Ruta al proceso en ejecución
 PROGPATH=`echo $0 | /bin/sed -e 's,[\\/][^\\/][^\\/]*$,,'`
+
+# Revisión del programa en ejecución
 REVISION=`echo '$Revision: 1 $' | /bin/sed -e 's/[^0-9.]//g'`
 
+# Cargamos las variables de entorno para el nagios
 . $PROGPATH/utils.sh
 
 print_usage() {
@@ -46,7 +59,7 @@ if [ "x$EQ" != "x" ]; then
 	# Almacenamos el tiempo de ejecución
 	TEXEC="Tiempo de ejecución: `echo $FILENAG | cut -f3 -d" "`"
 	
-	# Pasamos el fichero nuevo a viejo
+	# Pasamos el fichero nuevo (descargado vía $URLFILE) al viejo (dejamos el estado actual en $OLDFILE para próximas llamadas)
 	mv $NEWFILE $OLDFILE
 
 	# Si no se ejecutó correctamente, devuelve el error
