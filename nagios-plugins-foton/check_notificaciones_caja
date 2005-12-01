@@ -1,0 +1,71 @@
+URLFILE=$1
+USER=$2
+PASS=$3
+NEWFILE="$4.new"
+OLDFILE=$4
+
+PROGNAME=`/usr/bin/basename $0`
+PROGPATH=`echo $0 | /bin/sed -e 's,[\\/][^\\/][^\\/]*$,,'`
+REVISION=`echo '$Revision: 1 $' | /bin/sed -e 's/[^0-9.]//g'`
+
+. $PROGPATH/utils.sh
+
+print_usage() {
+	echo "Usage: $PROGNAME URL user password ultimo_fichero"
+	echo ""
+}
+
+print_help() {
+	echo "$PROGNAME: Version $REVISION"
+	echo "Plugin para chequear los suplementos de promociones en la caja"
+	echo ""
+	print_usage
+}
+
+if [ $# -lt 1 ]; then
+	print_help
+	exit $STATE_UNKNOWN
+fi
+
+# Descargamos el fichero nuevo
+wget -q $URLFILE -O $NEWFILE --http-user=$USER --http-password=$PASS
+
+if [ -f $OLDFILE ]; then
+	EQ=`diff $NEWFILE $OLDFILE`
+else
+	EQ="xx"
+	touch $OLDFILE
+fi
+
+# Comprueba si han habido cambios
+if [ "x$EQ" != "x" ]; then
+	# Comprobamos si la ejecución del script fue satisfactoria
+	FILENAG=`cat $NEWFILE`
+	STATNAG=`echo $FILENAG | cut -f1 -d" "`
+
+	# Almacenamos el tiempo de ejecución
+	TEXEC="Tiempo de ejecución: `echo $FILENAG | cut -f3 -d" "`"
+	
+	# Pasamos el fichero nuevo a viejo
+	mv $NEWFILE $OLDFILE
+
+	# Si no se ejecutó correctamente, devuelve el error
+	if [ "x$STATNAG" != "xOK" ]; then
+		MSGERR=`echo $FILENAG | cut -f4 -d" "`
+
+		echo "$MSGERR - $TEXEC"
+		RETURNCODE=$STATE_WARNING
+	# En caso contrario, devuelve sólo el tiempo de ejecución
+	else
+		echo $TEXEC
+		RETURNCODE=$STATE_OK
+	fi
+	
+fi
+
+# Borra el fichero que se descargó, si existiera
+if [ -f $NEWFILE ]; then
+	rm $NEWFILE
+fi
+
+exit $RETURNCODE
