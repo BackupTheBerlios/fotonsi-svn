@@ -274,8 +274,8 @@ sub ensure_bound {
 }
 
 
-# Tries to unbound a directory. Returns if the directory could be unbound
-sub unbound {
+# Tries to unbind a directory. Returns if the directory could be unbound
+sub unbind {
     my ($chroot_dir) = @_;
 
     if (is_bound($chroot_dir)) {
@@ -431,9 +431,9 @@ foreach my $chroot (@chroots) {
 
     if (ref $chroot_conf and $action eq 'stop') {
         foreach my $dir_pair (bind_dirs($chroot, $chroot_conf)) {
-            my $ret = unbound($dir_pair->[1]);
+            my $ret = unbind($dir_pair->[1]);
             if (! $ret and !$options{q}) {
-                print STDERR "WARNING: Couldn't unbound directory $dir_pair->[1]\n";
+                print STDERR "WARNING: Couldn't unbind directory $dir_pair->[1]\n";
             }
         }
     }
