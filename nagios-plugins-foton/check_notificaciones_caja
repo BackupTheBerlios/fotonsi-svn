@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # URL para descargar el fichero con los datos de la promoción
 URLFILE=$1
 
