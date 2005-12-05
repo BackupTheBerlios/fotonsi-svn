@@ -5,6 +5,8 @@ $DEBUG = nil
 $LOAD_PATH << '/usr/share/fosc'
 
 module Fosc
+   VERSION = 0.3
+
    class FosConverter
       attr_reader :dataBase
 
