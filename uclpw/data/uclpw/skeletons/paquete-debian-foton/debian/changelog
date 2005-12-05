@@ -1,0 +1,5 @@
+%{PACKAGE} (%{VERSION}-1) UNRELEASED; urgency=low
+
+  * New package.
+
+ -- %{MAINTAINER} <%{EMAIL}>  Sat,  3 Dec 2005 22:58:37 +0000

@@ -3,6 +3,10 @@
 require 'ftools'
 require 'fileutils'
 
+module UCLPW
+   VERSION = '0.1cvs'
+end
+
 class SkeletonProcessor
    attr_reader :vars, :varsFile
    attr_reader :skeletonDirs
@@ -36,7 +40,7 @@ class SkeletonProcessor
       return false
    end
 
-   # Find every file recursively and substitutes %(var_name)-style macros
+   # Find every file recursively and substitutes %{var_name}-style macros
    def process_dir(dir)
       Dir.foreach(dir) do |f|
          next if f =~ /^\.\.?$/
@@ -152,7 +156,7 @@ rescue NameError => e
    raise unless e.name == :pre_process
 end
 
-# Process every file (find and substitute every %(var_name)-style macro)
+# Process every file (find and substitute every %{var_name}-style macro)
 print "Processing skeleton... "
 processor.process_dir('.')
 puts "done."
