@@ -1,4 +1,4 @@
-REVISION=$Revision: 1$
+REVISION=$Revision$
 VERSION=$(subst $,,$(subst $Revision: ,,$(REVISION)))
 $(warning $(VERSION))
 PLUGINS=check_*
