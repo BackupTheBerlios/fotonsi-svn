@@ -131,7 +131,7 @@ next to the view name (see the example).
 
 The column definition section consists of one line per each column in the view.
 Each column has at least a column name, but can also contain the table it's in
-(in the form of table.column), and an optional alias.
+(in the form of table.column), and an optional alias. If you want to use random expressions instead of field names, you can, too.
 
 The SQL definition section consists of the SQL chunk beginning with the +FROM+
 clause, until the end of the query.
@@ -158,6 +158,13 @@ view attributes. Right now there's only one defined: the +distinct+ attribute.
  ~~~~~~~~
  distinct
 
+ view3 (view)
+ ------------
+ substr(some_field, 4, 3) AS some_truncated_field
+ some_expression(without_alias)
+ ~~~~~~~~
+ FROM some_table
+
 The first one would produce something like:
 
  CREATE VIEW view_name AS SELECT fieldname1, some_table.fieldname2, fieldname3 AS fn3, table2.fieldname4 AS t2fn4 FROM some_table, table2, table3;
@@ -165,6 +172,10 @@ The first one would produce something like:
 The second one would produce something like:
 
  CREATE VIEW view2 AS SELECT DISTINCT fieldname22 FROM table6 WHERE fieldname11 > 5;
+
+And finally, the third one:
+
+ CREATE VIEW view3 AS SELECT substr(some_field, 4, 3) AS some_truncated_field, some_expression(without_alias) FROM some_table;
 
 
 = The FOS Converter

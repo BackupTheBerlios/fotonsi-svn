@@ -72,4 +72,21 @@ EOD
       assert_equal('distinct', viewElement.attributes.first.name,
                                                    "Attribute name")
    end
+
+   def test_expressions
+       viewElement = Fosc::Elements::View.new('attr_view').import(<<EOD)
+some(strange(expression)) || 'foo'
+CASE WHEN a=1 THEN 'one' WHEN a=2 THEN 'two' ELSE 'other' END AS foobar
+~~~~~~~~~
+FROM b WHERE c = 'f'
+EOD
+      assert_equal(2, viewElement.fields.size, "Number of attributes")
+      assert_equal("some(strange(expression)) || 'foo'",
+                   viewElement.fields[0].name,
+                                                "Random expressions")
+      assert_equal("CASE WHEN a=1 THEN 'one' WHEN a=2 THEN 'two' ELSE 'other' END",
+                   viewElement.fields[1].name,  "More random expressions")
+      assert_equal("foobar", viewElement.fields[1].fieldAlias,
+                                                "Alias for random expressions")
+   end
 end

@@ -8,6 +8,8 @@ have an alias, to be used in the SQL definition. An example:
  t1.b as b1
  t2.b as b2
  t2.c
+ some(expression)
+ some(other(expression)) as some_field
  ~~~~~~~~~~~
  FROM t1 LEFT JOIN t2 ON t1.c = t2.c
 =end
@@ -41,6 +43,11 @@ module Fosc
                   # Field definition
                   line =~ /^\s*(([a-z0-9_]+)\.)?([a-z0-9_]+)(\s+as\s+([a-z0-9_]+)?\s*)?$/i
                   optTable, fieldName, optAlias = $2, $3, $5
+                  # Second attempt, this time looking for a random expression
+                  unless fieldName
+                      line =~ /^\s*(.+?)(\s+as\s+([a-z0-9_]+)?\s*)?$/i
+                      optTable, fieldName, optAlias = nil, $1, $3
+                  end
                   fieldName or raise FosSyntaxError.new("Syntax error in view #{name}", lineNumber, "Can't find field name in #{line}")
                   @fields << ViewField.new(fieldName, optTable, optAlias)
                elsif state == 'sql_def'
