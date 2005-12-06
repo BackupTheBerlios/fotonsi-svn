@@ -1,0 +1,10 @@
+Source: %{PACKAGE}
+Section: interpreters
+Priority: optional
+Maintainer: %{MAINTAINER}
+Standards-Version: 3.6.2
+
+Package: %{PACKAGE}
+Architecture: all
+Description: %{DESCRIPTION}
+ %{DESCRIPTION} (long description)

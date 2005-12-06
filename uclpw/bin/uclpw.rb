@@ -90,87 +90,88 @@ class SkeletonProcessor
 end
 
 
+if $0 == __FILE__
+    projectName = ARGV.shift
+    skeleton    = ARGV.shift || 'default'
 
-projectName = ARGV.shift
-skeleton    = ARGV.shift || 'default'
+    if projectName.nil?
+       $stderr.puts "Usage: uclpw new-project-name [skeleton-name]"
+       exit(1)
+    end
 
-if projectName.nil?
-   $stderr.puts "Usage: uclpw new-project-name [skeleton-name]"
-   exit(1)
-end
+    processor = SkeletonProcessor.new(projectName)
 
-processor = SkeletonProcessor.new(projectName)
+    # Get skeleton
+    if FileTest.exists? processor.projectName
+       $stderr.puts "uclpw: ERROR: '#{processor.projectName}' already exists"
+       exit(1)
+    end
+    if not processor.get_skeleton(skeleton)
+       $stderr.puts "uclpw: Couldn't get skeleton '#{skeleton}'"
+       exit(1)
+    end
 
-# Get skeleton
-if FileTest.exists? processor.projectName
-   $stderr.puts "uclpw: ERROR: '#{processor.projectName}' already exists"
-   exit(1)
-end
-if not processor.get_skeleton(skeleton)
-   $stderr.puts "uclpw: Couldn't get skeleton '#{skeleton}'"
-   exit(1)
-end
+    # Change directory to the new skeleton copy
+    Dir.chdir processor.projectName
 
-# Change directory to the new skeleton copy
-Dir.chdir processor.projectName
+    # Load variables from the 'vars' file
+    begin
+       varList = []
+       File.foreach(processor.varsFile) do |line|
+          next if line =~ /^#/    # Drop comment lines
+          line =~ /([A-Z_]+)\s*=(.*)/
+          var, default_value = $1, $2
+          varList << var
+          processor.vars[var] = default_value.strip
+       end
+    end
 
-# Load variables from the 'vars' file
-begin
-   varList = []
-   File.foreach(processor.varsFile) do |line|
-      next if line =~ /^#/    # Drop comment lines
-      line =~ /([A-Z_]+)\s*=(.*)/
-      var, default_value = $1, $2
-      varList << var
-      processor.vars[var] = default_value.strip
-   end
-end
+    # Load the skeleton 'extra' module
+    begin
+       # We're already in the skeleton copy directory
+       require 'extra'
+    rescue LoadError
+       $stderr.puts "No extra actions to execute"
+    end
 
-# Load the skeleton 'extra' module
-begin
-   # We're already in the skeleton copy directory
-   require 'extra'
-rescue LoadError
-   $stderr.puts "No extra actions to execute"
-end
+    # Find out variable values ...
+    while true
+       varList.each do |k|
+          print processor.vars[k] ? "#{k} [#{processor.vars[k]}]\t= " : "#{k}\t= "
+          input = gets.strip
+          processor.vars[k] = input if input != ''
+       end
+       puts
+       varList.each {|k| puts "#{k} = #{processor.vars[k]}"}
+       print "Is everything OK? [Y/n] "
+       break unless gets.strip =~ /^n/i
+    end
+    # ...and actually save them
+    processor.update_vars_file
 
-# Find out variable values ...
-while true
-   varList.each do |k|
-      print processor.vars[k] ? "#{k} [#{processor.vars[k]}]\t= " : "#{k}\t= "
-      input = gets.strip
-      processor.vars[k] = input if input != ''
-   end
-   puts
-   varList.each {|k| puts "#{k} = #{processor.vars[k]}"}
-   print "Is everything OK? [Y/n] "
-   break unless gets.strip =~ /^n/i
-end
-# ...and actually save them
-processor.update_vars_file
+    # Pre-processing hook
+    begin
+       processor.pre_process
+    rescue NameError => e
+       raise unless e.name == :pre_process
+    end
 
-# Pre-processing hook
-begin
-   processor.pre_process
-rescue NameError => e
-   raise unless e.name == :pre_process
-end
+    # Process every file (find and substitute every %{var_name}-style macro)
+    print "Processing skeleton... "
+    processor.process_dir('.')
+    puts "done."
 
-# Process every file (find and substitute every %{var_name}-style macro)
-print "Processing skeleton... "
-processor.process_dir('.')
-puts "done."
+    # Post-processing hook
+    begin
+       processor.post_process
+    rescue NameError => e
+       raise unless e.name == :post_process
+    end
 
-# Post-processing hook
-begin
-   processor.post_process
-rescue NameError => e
-   raise unless e.name == :post_process
-end
-
-# Clean up temp files
-print "Clean up temp files (*~)? [Y/n] "
-unless gets.strip =~ /^n/i
-   processor.cleanup_dir('.')
-   FileTest.exists?('extra.rb') && File.safe_unlink('extra.rb')
+    # Clean up temp files
+    print "Clean up temp files (*~)? [Y/n] "
+    unless gets.strip =~ /^n/i
+       processor.cleanup_dir('.')
+       FileTest.exists?('extra.rb') && File.safe_unlink('extra.rb')
+    end
 end
