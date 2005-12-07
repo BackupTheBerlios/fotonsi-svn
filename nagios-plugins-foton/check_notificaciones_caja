@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # URL para descargar el fichero con los datos de la promoción
 URLFILE=$1
 
@@ -25,11 +23,13 @@ REVISION=`echo '$Revision: 1 $' | /bin/sed -e 's/[^0-9.]//g'`
 # Cargamos las variables de entorno para el nagios
 . $PROGPATH/utils.sh
 
+# Modo de uso
 print_usage() {
 	echo "Usage: $PROGNAME URL user password ultimo_fichero"
 	echo ""
 }
 
+# Ayuda
 print_help() {
 	echo "$PROGNAME: Version $REVISION"
 	echo "Plugin para chequear los suplementos de promociones en la caja"
@@ -37,13 +37,15 @@ print_help() {
 	print_usage
 }
 
+# Si no se pasan parámetros, termina el script mostrando la ayuda
 if [ $# -lt 1 ]; then
 	print_help
 	exit $STATE_UNKNOWN
 fi
 
 # Descargamos el fichero nuevo
-wget -q $URLFILE -O $NEWFILE --http-user=$USER --http-password=$PASS
+## El formato es: OK/ERROR/WARNING;DURACION_CONSULTA;[LISTADO_OFICINAS]
+wget -q $URLFILE -O $NEWFILE --http-user=$USER --http-passwd=$PASS
 
 if [ -f $OLDFILE ]; then
 	EQ=`diff $NEWFILE $OLDFILE`
@@ -56,20 +58,20 @@ fi
 if [ "x$EQ" != "x" ]; then
 	# Comprobamos si la ejecución del script fue satisfactoria
 	FILENAG=`cat $NEWFILE`
-	STATNAG=`echo $FILENAG | cut -f1 -d" "`
+	STATNAG=`echo $FILENAG | cut -f1 -d";"`
 
 	# Almacenamos el tiempo de ejecución
-	TEXEC="Tiempo de ejecución: `echo $FILENAG | cut -f3 -d" "`"
+	TEXEC="Tiempo de ejecución: `echo $FILENAG | cut -f3 -d";"`"
 	
 	# Pasamos el fichero nuevo (descargado vía $URLFILE) al viejo (dejamos el estado actual en $OLDFILE para próximas llamadas)
 	mv $NEWFILE $OLDFILE
 
-	# Si no se ejecutó correctamente, devuelve el error
+	# Si no se ejecutó correctamente, devuelve el mensaje de error junto con la lista de oficinas
 	if [ "x$STATNAG" != "xOK" ]; then
-		MSGERR=`echo $FILENAG | cut -f4 -d" "`
+		MSGERR=`echo $FILENAG | cut -f4 -d";"`
 
-		echo "$MSGERR - $TEXEC"
-		RETURNCODE=$STATE_WARNING
+		echo "$TEXEC - $MSGERR"
+		RETURNCODE=$STATE_CRITICAL
 	# En caso contrario, devuelve sólo el tiempo de ejecución
 	else
 		echo $TEXEC
