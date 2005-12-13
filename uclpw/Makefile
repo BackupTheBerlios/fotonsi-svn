@@ -6,7 +6,7 @@ DISTNAME=$(PACKAGE)-$(VERSION)
 all: doc
 
 doc:
-	rdoc README bin/
+	rdoc README INSTALL bin/
 
 clean:
 	rm -rf doc $(TMPDIR)
