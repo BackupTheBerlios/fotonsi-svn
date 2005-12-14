@@ -1,7 +1,7 @@
 all: rdoc
 
 rdoc:
-	rdoc bin README lib/ data/fosc/plugins/
+	rdoc bin README INSTALL lib/ data/fosc/plugins/
 
 test:
 	# Variable de entorno en vez de opción, por si se ejecuta el fosc
