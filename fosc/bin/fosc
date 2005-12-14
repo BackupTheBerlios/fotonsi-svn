@@ -9,10 +9,11 @@ if __FILE__ == $0
     require 'getoptlong'
 
     opts = GetoptLong.new(
-        [ "--tables",    "-t",            GetoptLong::REQUIRED_ARGUMENT ],
-        [ "--structure-only",    "-s", 0],
-        [ "--integrity-only",    "-i", 0],
-        [ "--aplic-name",    "-a", GetoptLong::REQUIRED_ARGUMENT ]
+        [ "--tables",         "-t", GetoptLong::REQUIRED_ARGUMENT ],
+        [ "--structure-only", "-s", 0],
+        [ "--integrity-only", "-i", 0],
+        [ "--aplic-name",     "-a", GetoptLong::REQUIRED_ARGUMENT ],
+        [ "--help",           "-h", 0]
     )
 
     fosc_options = {
@@ -29,6 +30,11 @@ if __FILE__ == $0
             fosc_options['output'] = 'integrity'
         when '--aplic-name'
             fosc_options['aplic'] = arg
+        when '--help'
+            puts "fosc: Foton Own Standard for DataBases"
+            puts "usage: fosc file.fos [-t|--tables table1, table2, ...] [-s|structure-only]"
+            puts "         [-i|--integrity-only] [--aplic-name|-a aplicname] [outputplugin] [par1 par2 ...] " 
+            exit 0
         end
     end
 
