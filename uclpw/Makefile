@@ -16,6 +16,7 @@ MANIFEST: clean
 	find | egrep -v /.svn >MANIFEST
 
 dist: clean MANIFEST
+	rm -f $(DISTNAME).tar.gz
 	mkdir -p $(TMPDIR)/$(DISTNAME)
 	while read file; do \
 	    dir=`dirname $$file`; \
