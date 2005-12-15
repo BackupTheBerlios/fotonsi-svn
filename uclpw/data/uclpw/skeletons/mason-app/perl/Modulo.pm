@@ -1,4 +1,4 @@
-package %(modulo_perl);
+package %{modulo_perl};
 
 use strict;
 
@@ -11,11 +11,11 @@ require Exporter;
 
 =head1 NOMBRE
 
-%(modulo_perl) - %(resumen)
+%{modulo_perl} - %{RESUMEN}
 
 =head1 DESCRIPCIÓN
 
-%(resumen)
+%{RESUMEN}
 
 =head1 DERECHOS
 
