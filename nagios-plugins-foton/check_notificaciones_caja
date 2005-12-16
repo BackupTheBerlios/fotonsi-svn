@@ -55,7 +55,11 @@ else
 fi
 
 # Comprueba si han habido cambios
-if [ "x$EQ" != "x" ]; then
+if [ "x$EQ" = "x" ]; then
+
+	MSGERR="No se ha ejecutado el script para el volcado de la base de datos"
+	RETURNCODE=$STATE_CRITICAL
+else
 	# Comprobamos si la ejecución del script fue satisfactoria
 	FILENAG=`cat $NEWFILE`
 	STATNAG=`echo $FILENAG | cut -f1 -d";"`
