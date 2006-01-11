@@ -77,7 +77,7 @@ Currently there are three configuration keys:
  chroot_bin = /usr/sbin/chroot
 
  [init_scripts]
- filter = halt|sendsigs|hwclock
+ filter = halt|sendsigs|hwclock|umountfs|umountnfs
 
 The first one specifies the directory where the chroot reside. The second one,
 the absolute path for the C<chroot> executable. The third one is a filter (a
@@ -344,7 +344,7 @@ else {
 }
 
 # Regexp to filter out potencially dangerous scripts
-my $filter     = $conf->{init_scripts}->{filter} || 'halt|sendsigs|hwclock';
+my $filter     = $conf->{init_scripts}->{filter} || 'halt|sendsigs|hwclock|umountfs|umountnfs';
 # Path for chroot program
 my $chroot_cmd = $conf->{path}->{chroot_bin}     || '/usr/sbin/chroot';
 if ($chroot_cmd !~ m;^/;) {

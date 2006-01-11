@@ -3,4 +3,4 @@ repo = /home/chroot
 ; chroot_bin = /usr/sbin/chroot
 
 [init_scripts]
-; filter = halt|sendsigs|hwclock
+; filter = halt|sendsigs|hwclock|umountfs|umountnfs
