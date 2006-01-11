@@ -1,0 +1,184 @@
+#!/usr/bin/perl -Tw
+
+# nagios check for debian (security) updates,
+# based on net-snmp glue to security updates via apt-get.
+#  Copyright (C) 2004 SILVER SERVER GmbH
+#  Copyright (C) 2004, 2005 Peter Palfrader
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+# USA
+
+use strict;
+use English;
+use Getopt::Long;
+
+$ENV{'PATH'} = '/bin:/sbin:/usr/bin:/usr/sbin';
+delete @ENV{'IFS', 'CDPATH', 'ENV', 'BASH_ENV'};
+
+
+my $VERSION = '0.0.2';
+my $APT = '/usr/bin/apt-get';
+my $USE_SUDO = 1;
+my $params;
+
+# nagios exit codes
+my %EXITCODES = (
+   'ok' => 0,
+   'warn' => 1,
+   'critical' => 2,
+   'unknown' => 3 );
+
+$SIG{'__DIE__'} = sub {
+	print STDERR @_;
+	exit $EXITCODES{'unknown'};
+};
+
+$params->{'chroots'} = [];
+$params->{'updates'} = 'warn';
+$params->{'security'} = 'critical';
+
+Getopt::Long::config('bundling');
+if (!GetOptions (
+	'--help'	=> \$params->{'help'},
+	'--version'	=> \$params->{'version'},
+	'--sudo'	=> \$params->{'sudo'},
+	'--nosudo'	=> \$params->{'nosudo'},
+	'--verbose'	=> \$params->{'verbose'},
+	'--updates=s'	=> \$params->{'updates'},
+	'--security=s'	=> \$params->{'security'},
+	'--skip-update'	=> \$params->{'skip-update'},
+	'--chroot=s'	=> $params->{'chroots'},
+	)) {
+	die ("Usage: $PROGRAM_NAME [--help|--version] [--sudo|--nosudo] [--updates=<action>] [--security=<action>] [--verbose] [--chroot=<path> [--chroot=<path>]] [--skip-update]\n");
+};
+if ($params->{'help'}) {
+	print "Usage: $PROGRAM_NAME [--help|--version] [--sudo|--nosudo] [--updates=<action>] [--security=<action>] [--verbose] [--chroot=<path> [--chroot=<path>]] [--skip-update]\n";
+	print "Reports packages to upgrade, updating the list if necessary.\n";
+	print "\n";
+	print " --help                          Print this short help.\n";
+	print " --version                       Report version number.\n";
+	print " --sudo                          Use sudo to call apt-get (default).\n";
+	print " --nosudo                        Do not use sudo to call apt-get.\n";
+	print " --updates=[ok|warn|critical]    What to do when there are updates.\n";
+	print "                                 Default: warn\n";
+	print " --security=[ok|warn|critical]   What to do when there are security updates.\n";
+	print "                                 Default: critical\n";
+	print " --skip-update                   Skip 'apt-get update' step.\n";
+	print " --verbose                       Be a little verbose.\n";
+	print " --chroot=<path>                 Run check in path.\n";
+	print "\n";
+	print "Note that for --sudo (default) you will need entries in /etc/sudoers like these:\n";
+	print "nagios          ALL=(ALL) NOPASSWD: /usr/bin/apt-get update\n";
+	print "nagios          ALL=(ALL) NOPASSWD: /usr/bin/apt-get --simulate upgrade\n";
+	print "nagios          ALL=(ALL) NOPASSWD: /usr/sbin/chroot /chroot-ia32 /usr/bin/apt-get update\n";
+	print "nagios          ALL=(ALL) NOPASSWD: /usr/sbin/chroot /chroot-ia32 /usr/bin/apt-get --simulate upgrade\n";
+	print "\n";
+	exit (0);
+};
+if ($params->{'version'}) {
+	print "nagios-check-apt-updates $VERSION\n";
+	print "nagios check for availability of debian (security) updates\n";
+	print "Copyright (c) 2004 SILVER SERVER GmbH\n";
+	print "Copyright (c) 2004, 2005 Peter Palfrader <peter\@palfrader.org>\n";
+	exit (0);
+};
+
+if ($params->{'sudo'} && $params->{'nosudo'}) {
+	die ("$PROGRAM_NAME: --sudo and --nosudo are mutually exclusive.\n");
+};
+if ($params->{'sudo'}) {
+	$USE_SUDO = 1;
+};
+if ($params->{'nosudo'}) {
+	$USE_SUDO = 0;
+};
+$params->{'updates'} = lc $params->{'updates'};
+$params->{'security'} = lc $params->{'security'};
+unless ( defined $EXITCODES{ $params->{'updates'} } ) {
+	die ("$PROGRAM_NAME: --updates takes one of ok, warn, critical as argument.\n");
+};
+unless ( defined $EXITCODES{ $params->{'security'} } ) {
+	die ("$PROGRAM_NAME: --security takes one of ok, warn, critical as argument.\n");
+};
+
+if (scalar @{$params->{'chroots'}} == 0) {
+	$params->{'chroots'} = ['/'];
+};
+
+
+# Make sure chroot paths are nice;
+my @chroots = ();
+for my $root (@{$params->{'chroots'}}) {
+	if ($root =~ m#^(/[a-zA-Z0-9/.-]*)$#) {
+		push @chroots, $1;
+	} else {
+		die ("Chroot path $root is not nice.\n");
+	};
+};
+
+my @updates_security;
+my @updates_other;
+
+for my $root (@chroots) {
+	my $pre_command = ($root ne '/') ? "chroot $root " : '';
+	   $pre_command = ($USE_SUDO ? 'sudo ' : '').$pre_command;
+
+	unless ($params->{'skip-update'}) {
+		print STDERR "Running $APT update in $root\n" if $params->{'verbose'};
+		open (UPDATE, "$pre_command$APT update|") or die ("Cannot run $APT update in $root: $!\n");
+		my @ignore=<UPDATE>;
+		close UPDATE;
+		if ($CHILD_ERROR) { # program failed
+			die("$APT update returned with non-zero exit code in $root: ".($CHILD_ERROR / 256)."\n");
+		};
+	};
+
+	print STDERR "Running $APT --simulate upgrade | sort -u in $root\n" if $params->{'verbose'};
+	open (TODO, "$pre_command$APT --simulate upgrade | sort -u |") or die ("Cannot run $APT --simulate upgrade | sort -u in $root: $!\n");
+	my @lines=<TODO>;
+	close TODO;
+	if ($CHILD_ERROR) { # program failed
+		die("$APT --simulate upgrade | sort -u returned with non-zero exit code in $root: ".($CHILD_ERROR / 256)."\n");
+	};
+
+	print STDERR "Processing information for $root\n" if $params->{'verbose'};
+	for my $line (@lines)  {
+		if ($line =~ m/^Inst\s+(\S+)\s+/) {
+			my $package = $1;
+			if ($line =~ m/^Inst\s+\S+\s+.*security/i) {
+				push @updates_security, $package.($root ne '/' ? "($root)" : '');
+			} else {
+				push @updates_other, $package.($root ne '/' ? "($root)" : '');
+			};
+		}
+	}
+};
+
+my $exit = $EXITCODES{'ok'};
+
+my $updateinfo;
+if (@updates_security) {
+	$updateinfo .= 'Security updates ('.(scalar @updates_security).'): '.join(', ', @updates_security)."; ";
+	$exit = $EXITCODES{ $params->{'security'} } > $exit ? $EXITCODES{ $params->{'security'} } : $exit;
+};
+if (@updates_other) {
+	$updateinfo .= 'Other Updates ('.(scalar @updates_other).'): '.join(', ', @updates_other)."; ";
+	$exit = $EXITCODES{ $params->{'updates'} } > $exit ? $EXITCODES{ $params->{'updates'} } : $exit;
+};
+$updateinfo = 'No updates available' unless defined $updateinfo;
+
+print $updateinfo,"\n";
+exit $exit;
+
