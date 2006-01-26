@@ -4,7 +4,7 @@ require 'ftools'
 require 'fileutils'
 
 module UCLPW
-   VERSION = '0.1cvs'
+   VERSION = '0.2'
 end
 
 class SkeletonProcessor
