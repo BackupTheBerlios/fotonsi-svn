@@ -3,6 +3,7 @@ use ExtUtils::MakeMaker;
 sub MY::postamble {
    return <<'INSTALL_INI';
 install ::
+	make -C libchrb install
 	@if [ ! -r /etc/chrootbooter.ini ]; then \
                 cp chrootbooter.ini-sample /etc/chrootbooter.ini; \
                 echo "***************************"; \
