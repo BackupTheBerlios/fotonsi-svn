@@ -88,15 +88,16 @@ int bind (
 
     /* bind
      *
-     * Esta primitiva del kernel se usa para asociar un socket a un puerto e IP, de 
-     * manera que luego se pueda hacer un listen(2) de ese socket.
+     * Esta primitiva del kernel se usa para asociar un socket a un puerto e
+     * IP, de manera que luego se pueda hacer un listen(2) de ese socket.
      *
-     * Nuestro objetivo es que la peticiones de bind que vayan a la ip 0.0.0.0 (cualquier
-     * dirección) se sustituyan por la IP colocada en el fichero /etc/fakefoton.ip.
+     * Nuestro objetivo es que la peticiones de bind que vayan a la ip 0.0.0.0
+     * (cualquier dirección) se sustituyan por la IP colocada en el fichero
+     * /etc/chrb/ip.
      * 
-     * Para ello, primero comprobamos que la familia es AF_INET (TPC/IPv4, para IPv6 sería
-     * AF_INET6), y luego comprobamos que esa dirección es la 0.0.0.0. De ser así, mandaremos
-     * al bind(2) una petición modificada.
+     * Para ello, primero comprobamos que la familia es AF_INET (TPC/IPv4, para
+     * IPv6 sería AF_INET6), y luego comprobamos que esa dirección es la
+     * 0.0.0.0. De ser así, mandaremos al bind(2) una petición modificada.
      */
 
     if (__addr->sa_family == AF_INET) {
@@ -105,7 +106,7 @@ int bind (
         if (in->sin_addr.s_addr == INADDR_ANY) {
             _loggin("(bind) Intenta conectar a %s:%d.\n", inet_ntoa(in->sin_addr), (int)ntohs(in->sin_port));
 
-            if ((file = fopen("/etc/fakefoton.ip", "r")))
+            if ((file = fopen("/etc/chrb/ip", "r")))
             {
                 register char *c;
 
