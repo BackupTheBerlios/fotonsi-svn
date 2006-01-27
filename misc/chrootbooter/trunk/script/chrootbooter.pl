@@ -379,7 +379,7 @@ foreach my $chroot (@chroots) {
 
     # Pre-tasks (configuration-driven)
     if (ref $chroot_conf) {
-        if ($action eq 'start') {
+        if ($action eq 'start' and !$options{n}) {
             foreach my $dir_pair (bind_dirs($chroot, $chroot_conf)) {
                 my $ret = ensure_bound($dir_pair->[0], $dir_pair->[1]);
                 if ($ret and !$options{q}) {
@@ -429,7 +429,7 @@ foreach my $chroot (@chroots) {
 	system("$chroot_cmd $chroot $init_script $action") unless $options{n};
     }
 
-    if (ref $chroot_conf and $action eq 'stop') {
+    if (ref $chroot_conf and $action eq 'stop' and !$options{n}) {
         foreach my $dir_pair (bind_dirs($chroot, $chroot_conf)) {
             my $ret = unbind($dir_pair->[1]);
             if (! $ret and !$options{q}) {
