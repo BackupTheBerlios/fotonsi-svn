@@ -7,7 +7,19 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <stdarg.h>
+#include <sys/utsname.h>
 
+/* Funciones para uso de la propia librería */
+static void _rstrip(char* cad)
+{
+    register char *c;
+    for (c = cad; *c; c++) {
+        if (*c == ' ' || *c == '\n' || *c == '\r') {
+            *c = '\0';
+            return;
+        }
+    }
+}
 
 /* Funciones originales */
 
@@ -86,18 +98,18 @@ int bind (
 
     _init_funcs();
 
+
     /* bind
      *
-     * Esta primitiva del kernel se usa para asociar un socket a un puerto e
-     * IP, de manera que luego se pueda hacer un listen(2) de ese socket.
+     * Esta primitiva del kernel se usa para asociar un socket a un puerto e IP, de
+     * manera que luego se pueda hacer un listen(2) de ese socket.
      *
-     * Nuestro objetivo es que la peticiones de bind que vayan a la ip 0.0.0.0
-     * (cualquier dirección) se sustituyan por la IP colocada en el fichero
-     * /etc/chrb/ip.
-     * 
-     * Para ello, primero comprobamos que la familia es AF_INET (TPC/IPv4, para
-     * IPv6 sería AF_INET6), y luego comprobamos que esa dirección es la
-     * 0.0.0.0. De ser así, mandaremos al bind(2) una petición modificada.
+     * Nuestro objetivo es que la peticiones de bind que vayan a la ip 0.0.0.0 (cualquier
+     * dirección) se sustituyan por la IP colocada en el fichero /etc/fakefoton.ip.
+     *
+     * Para ello, primero comprobamos que la familia es AF_INET (TPC/IPv4, para IPv6 sería
+     * AF_INET6), y luego comprobamos que esa dirección es la 0.0.0.0. De ser así, mandaremos
+     * al bind(2) una petición modificada.
      */
 
     if (__addr->sa_family == AF_INET) {
@@ -108,17 +120,10 @@ int bind (
 
             if ((file = fopen("/etc/chrb/ip", "r")))
             {
-                register char *c;
-
                 fgets(ip, sizeof(ip), file);
                 fclose(file);
 
-                for (c = ip; *c; c++) {
-                    if (*c == ' ' || *c == '\n' || *c == '\r') {
-                        *c = '\0';
-                        break;
-                    }
-                }
+                _rstrip(ip);
 
                 memcpy(&replace, in, sizeof(replace));
                 if (inet_aton(ip, &replace.sin_addr)) {
@@ -130,5 +135,28 @@ int bind (
     }
 
     return fnbind(__fd, __addr, __len);
+}
+
+
+/* Sustitución de gethostname para forzar que lea el nombre del host
+ * siempre desde el fichero /etc/hostname
+ */
+
+int gethostname(char* cadena, size_t lon)
+{
+    FILE* f;
+
+    if ((f = fopen("/etc/hostname", "r")))
+    {
+        fgets(cadena, lon, f);
+        _rstrip(cadena);
+        fclose(f);
+    } else {
+        struct utsname u;
+        uname(&u);
+        strncpy(cadena, u.nodename, lon);
+    }
+
+    return 0;
 }
 
