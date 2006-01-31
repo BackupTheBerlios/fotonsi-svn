@@ -1,3 +1,4 @@
+chrb-pre.conf-sample
 chrootbooter.ini-sample
 libchrb/chrb.c
 libchrb/Makefile
