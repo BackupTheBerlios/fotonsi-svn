@@ -21,6 +21,7 @@ WriteMakefile(
     'VERSION_FROM'	=> 'script/chrootbooter', # finds $VERSION
     'PREREQ_PM'		=> {
                               'Config::Tiny' => 1,
+                              'IO::Interface' => 0.98,
                            },
     'EXE_FILES'         => ['script/chrootbooter'],
     ($] >= 5.005 ?    ## Add these new keywords supported since 5.005

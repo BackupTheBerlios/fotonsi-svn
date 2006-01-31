@@ -4,3 +4,6 @@ repo = /home/chroot
 
 [init_scripts]
 ; filter = halt|sendsigs|hwclock|umountfs|umountnfs
+
+[networking]
+; interface = eth0
