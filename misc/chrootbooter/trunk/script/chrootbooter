@@ -268,7 +268,8 @@ sub read_pre_config {
         my $linenumber = 0;
         foreach my $line (<F>) {
             $linenumber++;
-            $line =~ s/\s#.*//o;
+            $line =~ s/\s+#.*//o;
+            $line =~ s/^#.*//o;
             $line =~ s/^\s+//o;
             $line =~ s/\s+$//o;
             if ($line =~ /^bind\s+([\/a-zA-Z_]+)(\s+([\/a-zA-Z_]+))?$/) {
@@ -476,13 +477,13 @@ foreach my $chroot (@chroots) {
 
             # Network interface alias
             if ($conf->{networking}->{interface}) {
-                print "Checking network interface alias..." if $options{v};
+                print "Checking network interface alias..." unless $options{q};
                 my $s = IO::Socket::INET->new(Proto => 'udp');
                 my @interfaces = grep /^$conf->{networking}->{interface}:/, $s->if_list;
                 my ($found, $first_free_alias) = (0, 0);
                 for my $if (@interfaces) {
                     if ($s->if_addr($if) eq $chroot_conf->{ip}) {
-                        print " already setup ($if -> $chroot_conf->{ip}).\n" if $options{v};
+                        print " already setup ($if -> $chroot_conf->{ip}).\n" unless $options{q};
                         $found = 1;
                     }
                     else {
@@ -494,14 +495,14 @@ foreach my $chroot (@chroots) {
                 if (!$found) {
                     my $iface = "$conf->{networking}->{interface}:$first_free_alias";
                     my $cmd = "/sbin/ifconfig $iface $chroot_conf->{ip}";
-                    print " setting up $iface..." if $options{v};
+                    print " setting up $iface..." unless $options{q};
                     my $r = system($cmd);
                     if ($r == 0) {
-                        print " done.\n" if $options{v};
+                        print " done.\n" unless $options{q};
                     }
                     else {
-                        print $options{v} ? " failure ($cmd).\n" :
-                                            "Error setting up network alias $iface for $chroot\n";
+                        print $options{q} ? "Error setting up network alias $iface for $chroot\n" :
+                                            " failure ($cmd).\n";
                     }
                 }
             }
@@ -526,28 +527,28 @@ foreach my $chroot (@chroots) {
 
         # Network interface alias
         if ($conf->{networking}->{interface}) {
-            print "Bringing down network interface alias..." if $options{v};
+            print "Bringing down network interface alias..." unless $options{q};
             my $s = IO::Socket::INET->new(Proto => 'udp');
             my @interfaces = grep /^$conf->{networking}->{interface}:/, $s->if_list;
             my $found = 0;
             for my $if (@interfaces) {
                 if ($s->if_addr($if) eq $chroot_conf->{ip}) {
-                    print " found ($if -> $chroot_conf->{ip})..." if $options{v};
-                    my $cmd = "/sbin/ifconfig $if $chroot_conf->{ip}";
+                    print " found ($if -> $chroot_conf->{ip})..." unless $options{q};
+                    my $cmd = "/sbin/ifconfig $if down";
                     my $r = system($cmd);
                     if ($r == 0) {
-                        print " done.\n" if $options{v};
+                        print " done.\n" unless $options{q};
                     }
                     else {
-                        print $options{v} ? " failure ($cmd).\n" :
-                                            "Error bringing down network alias $if for $chroot\n";
+                        print $options{q} ? "Error bringing down network alias $if for $chroot\n" :
+                                            " failure ($cmd).\n";
                     }
                     $found = 1;
                 }
             }
 
-            if (!$found) {
-                print " failure.\n" if $options{v};
+            if (!$found && !$options{q}) {
+                print " failure.\n";
                 print "Couldn't bring down interface alias for $chroot_conf->{ip}: not found\n";
             }
         }
