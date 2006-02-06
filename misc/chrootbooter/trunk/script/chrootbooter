@@ -2,7 +2,7 @@
 
 use strict;
 
-=head1 TITLE
+=head1 NAME
 
 chrootbooter - Script to "boot" chroots
 
@@ -151,7 +151,7 @@ it from C</etc/hostname>.
 
 =head1 LICENSE
 
- Copyright (C) 2005 Esteban Manchado Velázquez <zoso@foton.es>
+ Copyright (C) 2005 Esteban Manchado Vel\['a]zquez <zoso@foton.es>
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
