@@ -23,6 +23,9 @@ REVISION=`echo '$Revision: 1 $' | /bin/sed -e 's/[^0-9.]//g'`
 # Cargamos las variables de entorno para el nagios
 . $PROGPATH/utils.sh
 
+# Mensaje que se devuelve al nagios
+MSGRET=""
+
 # Modo de uso
 print_usage() {
 	echo "Usage: $PROGNAME URL user password ultimo_fichero"
@@ -57,7 +60,7 @@ fi
 # Comprueba si han habido cambios
 if [ "x$EQ" = "x" ]; then
 
-	MSGERR="No se ha ejecutado el script para el volcado de la base de datos"
+	MSGRET="No se ha ejecutado el script para el volcado de la base de datos"
 	RETURNCODE=$STATE_CRITICAL
 else
 	# Comprobamos si la ejecución del script fue satisfactoria
@@ -74,11 +77,13 @@ else
 	if [ "x$STATNAG" != "xOK" ]; then
 		MSGERR=`echo $FILENAG | cut -f4 -d";"`
 
-		echo "$TEXEC - $MSGERR"
+		#echo "$TEXEC - $MSGERR"
+		MSGRET="$TEXEC - $MSGERR"
 		RETURNCODE=$STATE_CRITICAL
 	# En caso contrario, devuelve sólo el tiempo de ejecución
 	else
-		echo $TEXEC
+		#echo $TEXEC
+		MSGRET=$TEXEC
 		RETURNCODE=$STATE_OK
 	fi
 	
@@ -88,5 +93,8 @@ fi
 if [ -f $NEWFILE ]; then
 	rm $NEWFILE
 fi
+
+# Devolvemos el mensaje final al nagios y el estado del script ($RETURNCODE)
+echo $MSGRET
 
 exit $RETURNCODE
