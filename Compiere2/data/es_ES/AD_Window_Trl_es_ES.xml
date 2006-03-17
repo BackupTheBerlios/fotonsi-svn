@@ -138,8 +138,8 @@
     <value column="Help" original="System Admin use only.">Para uso del administrador del sistema solamente.</value>
   </row>
   <row id="130" trl="Y">
-    <value column="Name" original="Project (Service)">Proyecto</value>
-    <value column="Description" original="Maintain Service Projects">Mantener Proyectos</value>
+    <value column="Name" original="Project (Service)">Proyecto (Servicio)</value>
+    <value column="Description" original="Maintain Service Projects">Mantener Proyectos de Servicio</value>
     <value column="Help" original="The Project Window is used to define the projects which will be tracked via documents.">La ventana de Proyectos es usada para definir los proyectos que serán monitoreados por medio de documentos de la aplicación.</value>
   </row>
   <row id="131" trl="Y">
