@@ -173,7 +173,7 @@ it from C</etc/hostname>.
 
 =cut
 
-our $VERSION = 0.301;
+our $VERSION = 0.31;
 
 use File::Copy qw(copy);
 use IO::Socket;
@@ -330,7 +330,6 @@ sub ensure_bound {
     $bind_type ||= 'bind';
     my $bound = is_bound($chroot_dir);
     if (!$bound) {
-        print STDERR "Voy a ejecutar mount --$bind_type $dir $chroot_dir\n";
         if (system "mount --$bind_type $dir $chroot_dir") {
             print STDERR "Couldn't bind directory $dir to $chroot_dir\n";
             exit 1;
