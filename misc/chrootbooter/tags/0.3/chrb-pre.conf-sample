@@ -1,0 +1,4 @@
+# Copy this file as /etc/chrb/pre.conf inside each chroot, and customize it
+ensure_preload /usr/local/lib/libchrb.so.1
+bind /dev
+bind /proc
