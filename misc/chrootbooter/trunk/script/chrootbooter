@@ -95,7 +95,8 @@ This configuration file stores information for each C<chroot>. It currently has
 two possible directives:
 
  ensure_preload /some/path/to/libchrb.so.1
- bind /dev /dev
+ bind /proc /proc
+ rbind /dev /dev
 
 The C<ensure_preload> directive specifies some library that should be loaded
 with the C<LD_PRELOAD> trick. When present, C<chrootbooter> checks if the
@@ -109,6 +110,9 @@ The C<bind> directive mounts (with the C<--bind> option) the specified host
 directory (the first one) in the given C<chroot> directory (the second one),
 when starting, or umount when stopping. If both are the same, it can be
 specified as C<bind /onedir>.
+
+The C<rbind> directive is similar to the C<bind> one, only using the C<--rbind>
+option instead of C<--bind> in the C<mount> call.
 
 
 =head1 THE C<libchrb> LIBRARY
@@ -262,7 +266,7 @@ sub normalize_chroots {
 sub read_pre_config {
     my ($path) = @_;
 
-    my %config = ('bind' => {}, 'preload' => []);
+    my %config = ('bind' => {}, 'rbind' => {}, 'preload' => []);
 
     my $conf_file = "$path/pre.conf";
     if (-r $conf_file) {
@@ -274,10 +278,10 @@ sub read_pre_config {
             $line =~ s/^#.*//o;
             $line =~ s/^\s+//o;
             $line =~ s/\s+$//o;
-            if ($line =~ /^bind\s+([\/a-zA-Z_]+)(\s+([\/a-zA-Z_]+))?$/) {
-                my ($hostpath, $chrpath) = ($1, $3);
+            if ($line =~ /^(r?bind)\s+([\/a-zA-Z_]+)(\s+([\/a-zA-Z_]+))?$/) {
+                my ($option, $hostpath, $chrpath) = ($1, $2, $4);
                 $chrpath ||= $hostpath;
-                $config{bind}->{$hostpath} = $chrpath;
+                $config{$option}->{$hostpath} = $chrpath;
             }
             elsif ($line =~ /^ensure_preload\s+(.+)$/) {
                 push @{$config{preload}}, $1;
@@ -318,14 +322,16 @@ sub is_bound {
 }
 
 
-# Ensure some dir is bound. If it's not, bind it. Returns if the directory was
-# already bound
+# Ensure some dir is bound. If it's not, bind it, using the C<$bind_type>
+# option in the C<mount> call. Returns if the directory was already bound
 sub ensure_bound {
-    my ($dir, $chroot_dir) = @_;
+    my ($dir, $chroot_dir, $bind_type) = @_;
 
+    $bind_type ||= 'bind';
     my $bound = is_bound($chroot_dir);
     if (!$bound) {
-        if (system "mount --bind $dir $chroot_dir") {
+        print STDERR "Voy a ejecutar mount --$bind_type $dir $chroot_dir\n";
+        if (system "mount --$bind_type $dir $chroot_dir") {
             print STDERR "Couldn't bind directory $dir to $chroot_dir\n";
             exit 1;
         }
@@ -351,10 +357,12 @@ sub bind_dirs {
     my ($chroot, $chroot_conf) = @_;
 
     my @list;
-    foreach my $dir (keys %{$chroot_conf->{bind}}) {
-        my $chroot_dir = "$chroot/$chroot_conf->{bind}->{$dir}";
-        $chroot_dir =~ s;//+;/;go;
-        push @list, [$dir, $chroot_dir];
+    foreach my $bind_type (qw(bind rbind)) {
+        foreach my $dir (keys %{$chroot_conf->{$bind_type}}) {
+            my $chroot_dir = "$chroot/$chroot_conf->{$bind_type}->{$dir}";
+            $chroot_dir =~ s;//+;/;go;
+            push @list, [$dir, $chroot_dir, $bind_type];
+        }
     }
     @list;
 }
@@ -438,10 +446,10 @@ foreach my $chroot (@chroots) {
     # Pre-tasks (configuration-driven)
     if (ref $chroot_conf) {
         if ($action eq 'start' and !$options{n}) {
-            foreach my $dir_pair (bind_dirs($chroot, $chroot_conf)) {
-                my $ret = ensure_bound($dir_pair->[0], $dir_pair->[1]);
+            foreach my $dir_info (bind_dirs($chroot, $chroot_conf)) {
+                my $ret = ensure_bound(@$dir_info);
                 if ($ret and !$options{q}) {
-                    print STDERR "Skipping already bound directory $dir_pair->[1]\n";
+                    print STDERR "Skipping already bound directory $dir_info->[1]\n";
                 }
             }
 
@@ -520,10 +528,10 @@ foreach my $chroot (@chroots) {
     }
 
     if (ref $chroot_conf and $action eq 'stop' and !$options{n}) {
-        foreach my $dir_pair (bind_dirs($chroot, $chroot_conf)) {
-            my $ret = unbind($dir_pair->[1]);
+        foreach my $dir_info (bind_dirs($chroot, $chroot_conf)) {
+            my $ret = unbind($dir_info->[1]);
             if (! $ret and !$options{q}) {
-                print STDERR "WARNING: Couldn't unbind directory $dir_pair->[1]\n";
+                print STDERR "WARNING: Couldn't unbind directory $dir_info->[1]\n";
             }
         }
 
