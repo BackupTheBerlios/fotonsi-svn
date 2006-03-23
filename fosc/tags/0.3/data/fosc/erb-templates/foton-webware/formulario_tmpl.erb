@@ -1,0 +1,39 @@
+<%
+    tname = @element.name
+    t     = @element
+    nombre_iface = tname[1 .. -1].gsub(/_(.)/) {|s| $1.upcase}
+%>
+
+        <form $form.form_attributes method="post">
+        <fieldset>
+        <legend>Formulario de <%= nombre_iface %></legend>
+        <div class="fondo">
+        <table class="basica">
+
+<%
+        t.fields.each do |f|
+        
+%>
+        <tr>
+                <td>$form.W.<%= f.name %>.get_label</td>
+                <td width="100%">$form.<%= f.name %></td>
+        </tr>
+
+<%
+                    end
+%>
+
+        <tr>
+        <td colspan="2">
+        <div id="botonera">
+                <input type="submit" value="Guardar" name="Guardar" />
+                ##<input type="submit" value="Nuevo" name="Nuevo" />
+                <input type="button" value="Cancelar" name="Cancelar" onClick="location.href='list_<%= tname %>'"/>
+        </div>
+        </td>
+        </tr>
+
+        </table>
+        </div>
+        </fieldset>
+        </form>
