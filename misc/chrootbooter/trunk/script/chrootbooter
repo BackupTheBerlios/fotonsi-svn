@@ -169,7 +169,7 @@ it from C</etc/hostname>.
 
 =cut
 
-our $VERSION = 0.31;
+our $VERSION = 0.301;
 
 use File::Copy qw(copy);
 use IO::Socket;
@@ -178,12 +178,14 @@ use IO::Interface qw(:flags);
 
 sub usage {
     print STDERR <<EOUSAGE;
+chrootbooter version $VERSION.
 Usage: chrootbooter [-v] [-q] [-n] [-d chroot_repo_dir] start|stop [chroot]
 
 Examples:
    chrootbooter -d /var/chroots start
    chrootbooter stop /var/chroots/my_dev_chroot
    chrootbooter stop my_dev_chroot
+   chrootbooter start my_dev_chroot my_other_chroot
 
 Options:
    -n         Do nothing
