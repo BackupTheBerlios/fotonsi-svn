@@ -1,0 +1,9 @@
+
+[database]
+db_type = %(DB_TYPE)
+db_name = %(DB_NAME)
+username = %(DB_USER)
+password = %(DB_PASSWORD)
+host = %(DB_HOST)
+port = %(DB_PORT)
+

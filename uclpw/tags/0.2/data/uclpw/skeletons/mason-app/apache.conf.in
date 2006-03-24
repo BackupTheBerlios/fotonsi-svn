@@ -1,0 +1,48 @@
+AddType  text/html  .mhtml
+
+<Directory %(INSTALLATION_DIR)>
+  SSLRequireSSL
+  DirectoryIndex index.mhtml index.html
+  <FilesMatch "\.mhtml$">
+  	PerlSetVar MasonCompRoot  "%{APPLICATION_ID} => %(INSTALLATION_DIR)"
+  	PerlAddVar MasonCompRoot  "foton => /usr/local/share/foton/mason"
+        PerlSetVar MasonAllowGlobals $conexion
+        PerlAddVar MasonAllowGlobals $conf
+        SetHandler perl-script
+        PerlHandler HTML::Mason::ApacheHandler
+  </FilesMatch>
+</Directory>
+
+
+# Directorio de componentes
+<Directory %(INSTALLATION_DIR)/comp>
+   SetHandler perl-script
+   PerlInitHandler Apache::Constants::NOT_FOUND
+</Directory>
+
+# Directorio de plantillas
+<Directory %(INSTALLATION_DIR)/plantillas>
+   SetHandler perl-script
+   PerlInitHandler Apache::Constants::NOT_FOUND
+</Directory>
+
+# Directorio de sesiones
+<Directory %(INSTALLATION_DIR)/sesiones>
+   SetHandler perl-script
+   PerlInitHandler Apache::Constants::NOT_FOUND
+</Directory>
+
+# Directorio de ficheros temporales
+<Directory %(INSTALLATION_DIR)/tmp>
+   SetHandler perl-script
+   PerlInitHandler Apache::Constants::NOT_FOUND
+</Directory>
+
+
+
+
+# Ejemplo de directorio de desarrollo
+# <Directory %(INSTALLATION_DIR).usuario>
+   # PerlAddVar MasonCompRoot  "%{APPLICATION_ID}_usuario => %(INSTALLATION_DIR).usuario
+# </Directory>
+

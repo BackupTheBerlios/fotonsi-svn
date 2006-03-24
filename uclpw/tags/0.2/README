@@ -1,0 +1,63 @@
+= UCLPW
+
+UCLPW stands for Ultimate Command-Line Project Wizard, and aims to be a simple
+but powerful command-line utility to create initial versions of projects from
+templates (called _skeletons_). So one starts coding new projects from a
+half-working skeleton instead of from scratch.
+
+
+= The skeletons
+
+Each skeleton (project template) is a directory with arbitrary files and
+directories inside. Skeletons are located in
+<tt>/usr/share/uclpw/skeletons</tt>.
+
+Each file can have special marks like "<tt>%(MY_VARIABLE)</tt>" to be
+substituted by their values, and there are two special files: +vars+ and
+<tt>extra.rb</tt>. The first one is a variable file, while the second one is a
+Ruby file containing special, extra commands to execute when processing the
+project template.
+
+== The +vars+ file
+
+The variables file stores the variables appearing as special marks (see above)
+in any file in the project. The user is asked for the values of these variables,
+although they can have default values. Once UCLPW has all the needed
+values, the template processing begins, and every *existing* variable value will
+be substituted for the "<tt>%(VARIABLE_NAME)</tt>" style mark.
+
+An example of a +vars+ file could be:
+
+ DB_USER = 
+ DB_PASSWORD =
+ DB_CREATOR_USER = root
+ DB_CREATOR_PASSWORD =
+ # DB_NAME =
+ # DB_TYPE =
+
+Note that +DB_CREATOR_USER+ has a default value, while the rest do not. Also
+note that +DB_NAME+ and +DB_TYPE+ *aren't* requested from the user, they are
+there only for documentation/reference purposes (will be left in the generated
++vars+ file).
+
+
+== The <tt>extra.rb</tt> file
+
+This file defines new methods for the class +SkeletonProcessor+, as a way to
+extend the functionality of the project template. Supported methods are:
+
+[+pre_process+] Executed before finding and substituting "<tt>%(VARIABLE)</tt>"
+                references
+[+post_process+] Executed after finding and substituting "<tt>%(VARIABLE)</tt>"
+                 references
+
+
+= The command-line utility
+
+The command-line utility is called +uclpw+, and takes one or two parameters:
+the first is the project name (mandatory), and the second is the skeleton
+identifier (optional). For example, you could call +uclpw+ like this (with and
+without skeleton):
+
+ uclpw my_new_project
+ uclpw my_new_project special_skeleton

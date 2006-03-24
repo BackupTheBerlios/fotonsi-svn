@@ -1,0 +1,18 @@
+; Fichero de configuración de %{APPLICATION_ID}
+
+[base_datos]
+nombre = %(DB_NAME)
+usuario = %(DB_USER)
+clave = %(DB_PASSWORD)
+
+[dir]
+sesiones = /sesiones
+base = %(INSTALLATION_DIR)
+plantillas = /plantillas
+img = /img
+css = /css
+
+[url]
+base = /mason/%{APPLICATION_ID}
+img = /img
+css = /css

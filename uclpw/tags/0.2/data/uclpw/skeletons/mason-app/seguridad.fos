@@ -1,0 +1,23 @@
+tentidades_%{APPLICATION_ID}
+----------------------
+id_entidad serial
+nombre char(80)
+tipo char(1)
+clave char(50)
+
+tentidades_grupos_%{APPLICATION_ID}
+-----------------------------
+v_entidad bigint ref(tentidades_%{APPLICATION_ID}(id_entidad))
+v_grupo bigint ref(tentidades_%{APPLICATION_ID}(id_entidad))
+
+tpermisos_%{APPLICATION_ID}
+---------------------
+cod_permiso serial
+nombre char(255)
+
+tpermisos_entidades_%{APPLICATION_ID}_%{APPLICATION_ID}
+-------------------------------------------
+v_entidad bigint ref(tentidades_%{APPLICATION_ID}(id_entidad))
+v_enlace char(255)
+v_permiso bigint
+modo int

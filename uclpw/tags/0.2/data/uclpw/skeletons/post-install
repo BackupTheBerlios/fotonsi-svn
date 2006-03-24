@@ -1,0 +1,6 @@
+require 'fileutils'
+
+defaultSkelDir = '/usr/share/uclpw/skeletons/default'
+if not FileTest.exists? defaultSkelDir
+   FileUtils.ln_s 'mason-app', defaultSkelDir
+end

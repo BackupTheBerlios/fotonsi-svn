@@ -1,0 +1,12 @@
+
+Alias /wkstatic/%(APPLICATION_ID) %(WEBWARE_STATIC_FILES)
+
+<Directory %(WEBWARE_STATIC_FILES)>
+
+    Order allow,deny
+    Allow from all
+    Deny from none
+
+    Options None
+
+</Directory>

@@ -1,0 +1,7 @@
+<%flags>
+    inherit => 'autohandler.base'
+</%flags>
+% $m->call_next;
+<%init>
+    use Data::Dumper;
+</%init>

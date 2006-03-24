@@ -1,0 +1,81 @@
+/* Hojas de estilo principales de la aplicación */
+
+BODY {
+   font-family: Tahoma, Verdana, Geneva, sans-serif;
+   background-color: White;
+   color: Black;
+   font-size: 10px;
+}
+
+P {
+   font-family: inherit;
+   color: Black;
+   font-size: 10px;
+   font-weight: normal;
+   text-align: justify;
+}
+
+.titulopagina {
+   color: Black;
+   font-size: 14px;
+   font-weight: bold;
+   text-align: center;
+}
+
+.titulo {
+   color: Black;
+   font-size: 12px;
+}
+
+.etiqueta {
+   font-weight: bold;
+}
+
+.sololectura {
+   color: #ddd;
+}
+
+.resaltado {
+   font-weight: bold;
+}
+
+.aviso {
+   color: #f00;
+}
+
+.tablainterfaz {
+   border: 0px;
+}
+
+.tablainforme {
+   border-bottom: 1px solid #DEE7EF;
+}
+
+.boton {
+   background-color: #DEE7EF;
+   color: Black;
+   font-weight: bold;
+}
+
+.cajatexto {
+   background-color: #FFFFFF!important;
+   color: Black;
+   border: 1px solid #8CAEBD!important;
+}
+
+.radio {
+   border: none!important;
+   background-color: #FFFFFF!important;
+}
+
+.menu {
+   color: Gray;
+   font-size: 12px;
+   font-weight: bold;
+}
+
+.menucabecera { color: Black; text-align: center }
+
+.menuelemento { text-align: left }
+
+.menuelementohijo { text-align: left; font-size: 10px }
