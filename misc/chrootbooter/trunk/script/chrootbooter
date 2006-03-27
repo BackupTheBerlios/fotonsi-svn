@@ -92,7 +92,7 @@ Perl regular expression) of init scripts that should be always ignored.
 =head2 C</etc/chrb/pre.conf>
 
 This configuration file stores information for each C<chroot>. It currently has
-two possible directives:
+three possible directives:
 
  ensure_preload /some/path/to/libchrb.so.1
  bind /proc /proc
