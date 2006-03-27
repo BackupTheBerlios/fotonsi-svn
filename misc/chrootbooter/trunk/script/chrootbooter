@@ -178,8 +178,20 @@ our $VERSION = 0.311;
 use File::Copy qw(copy);
 use IO::Socket;
 use IO::Interface qw(:flags);
+use Term::ANSIColor;
 
 
+# Print information on the screen
+sub print_info {
+    print colored($_[0], 'blue');
+}
+
+# Print a warning on the screen
+sub print_warning {
+    print STDERR colored($_[0], 'red');
+}
+
+# Prints program usage and exits
 sub usage {
     print STDERR <<EOUSAGE;
 chrootbooter version $VERSION.
@@ -232,7 +244,7 @@ sub get_init_scripts {
     # Drop chroot basedir, then apply filter
     grep {
             if ($_ =~ $filter) {
-                print STDERR "Warning: Ignoring init script $_\n";
+                print_warning("Warning: Ignoring init script $_\n");
                 0;
             }
             else {
@@ -252,7 +264,7 @@ sub normalize_chroots {
 	       1
 	   }
 	   else {
-    	       print STDERR "Warning: skipping '$_': not a directory\n";
+    	       print_warning("Warning: skipping '$_': not a directory\n");
 	       0
 	   }
 	 }
@@ -290,7 +302,7 @@ sub read_pre_config {
                 # Do nothing
             }
             else {
-                print STDERR "$conf_file: $linenumber: Syntax error\n";
+                print_warning("$conf_file: $linenumber: Syntax error\n");
             }
         }
         close F;
@@ -331,7 +343,7 @@ sub ensure_bound {
     my $bound = is_bound($chroot_dir);
     if (!$bound) {
         if (system "mount --$bind_type $dir $chroot_dir") {
-            print STDERR "Couldn't bind directory $dir to $chroot_dir\n";
+            print_warning("Couldn't bind directory $dir to $chroot_dir\n");
             exit 1;
         }
     }
@@ -375,7 +387,7 @@ use Config::Tiny;
 my $conf_path = '/etc/chrootbooter.ini';
 my $conf = Config::Tiny->read($conf_path);
 defined $conf || do {
-    print STDERR "Can't read configuration file '$conf_path'\n";
+    print_warning("Can't read configuration file '$conf_path'\n");
     exit;
 };
 
@@ -395,11 +407,11 @@ if ($action ne 'start' && $action ne 'stop') {
 
 # Set chroot repository directory
 my $chroot_repo = $options{d} || $conf->{path}->{repo} || do {
-    print STDERR "You haven't specified a chroot repository\n";
+    print_warning("You haven't specified a chroot repository\n");
     exit 1;
 };
 if (!-d $chroot_repo) {
-    print STDERR "Can't find '$chroot_repo' or it isn't a directory\n";
+    print_warning("Can't find '$chroot_repo' or it isn't a directory\n");
 }
 
 
@@ -416,18 +428,18 @@ my $filter     = $conf->{init_scripts}->{filter} || 'halt|sendsigs|hwclock|umoun
 # Path for chroot program
 my $chroot_cmd = $conf->{path}->{chroot_bin}     || '/usr/sbin/chroot';
 if ($chroot_cmd !~ m;^/;) {
-    print STDERR "Warning: Non-absolute path for chroot: trying /usr/sbin/$chroot_cmd\n";
+    print_warning("Warning: Non-absolute path for chroot: trying /usr/sbin/$chroot_cmd\n");
     $chroot_cmd = "/usr/sbin/".$chroot_cmd;
 }
 if (!-x $chroot_cmd) {
-    print STDERR "Can't find $chroot_cmd. Please specify the absolute path in\n";
-    print STDERR "the configuration directive 'chroot_bin', under [path]\n";
+    print_warning("Can't find $chroot_cmd. Please specify the absolute path in\n".
+            "the configuration directive 'chroot_bin', under [path]\n");
 }
 # Init level
 my $init_level = $action eq 'start' ? 3 : 0;
 foreach my $chroot (@chroots) {
     my $number_equals = 78 - length("Processing $chroot ");
-    print "Processing $chroot ", ("=" x $number_equals), "\n" unless $options{q};
+    print_info("Processing $chroot ".("=" x $number_equals)."\n") unless $options{q};
 
     # Chroot configuration
     my $chroot_conf = undef;
@@ -435,11 +447,11 @@ foreach my $chroot (@chroots) {
     if (-d $conf_dir) {
         $chroot_conf = read_pre_config($conf_dir);
         if (! ref $chroot_conf) {
-            print STDERR "WARNING: wrong configuration for chroot $chroot\n";
+            print_warning("WARNING: wrong configuration for chroot $chroot\n");
         }
     }
     else {
-        print STDERR "WARNING: chroot $chroot doesn't have a configuration directory\n" unless $options{q};
+        print_warning("WARNING: chroot $chroot doesn't have a configuration directory\n") unless $options{q};
     }
 
     # Pre-tasks (configuration-driven)
@@ -448,7 +460,7 @@ foreach my $chroot (@chroots) {
             foreach my $dir_info (bind_dirs($chroot, $chroot_conf)) {
                 my $ret = ensure_bound(@$dir_info);
                 if ($ret and !$options{q}) {
-                    print STDERR "Skipping already bound directory $dir_info->[1]\n";
+                    print_warning("Skipping already bound directory $dir_info->[1]\n");
                 }
             }
 
@@ -457,12 +469,12 @@ foreach my $chroot (@chroots) {
                 # host filesystem
                 if (! -r "$chroot/$preload") {
                     if (-r $preload) {
-                        print "WARNING: Copying $preload to $chroot\n"
+                        print_warning("WARNING: Copying $preload to $chroot\n")
                                 unless $options{q};
                         copy $preload, "$chroot/$preload";
                     }
                     else {
-                        print STDERR "ERROR: Can't find $preload either in $chroot nor in host filesystem\n";
+                        print_warning("ERROR: Can't find $preload either in $chroot nor in host filesystem\n");
                         exit 1;
                     }
                 }
@@ -475,7 +487,7 @@ foreach my $chroot (@chroots) {
                 close F;
                 # If not present, simply add it at the end
                 if (! grep /^$preload$/, @preload_lines) {
-                    print "Adding $preload to $preload_file\n"
+                    print_info("Adding $preload to $preload_file\n")
                             unless $options{q};
                     open(F, ">>$preload_file") or
                             die "Can't open $preload_file for writing";
@@ -486,13 +498,13 @@ foreach my $chroot (@chroots) {
 
             # Network interface alias
             if ($conf->{networking}->{interface}) {
-                print "Checking network interface alias..." unless $options{q};
+                print_info("Checking network interface alias...") unless $options{q};
                 my $s = IO::Socket::INET->new(Proto => 'udp');
                 my @interfaces = grep /^$conf->{networking}->{interface}:/, $s->if_list;
                 my ($found, $first_free_alias) = (0, 0);
                 for my $if (@interfaces) {
                     if ($s->if_addr($if) eq $chroot_conf->{ip}) {
-                        print " already setup ($if -> $chroot_conf->{ip}).\n" unless $options{q};
+                        print_info(" already setup ($if -> $chroot_conf->{ip}).\n") unless $options{q};
                         $found = 1;
                     }
                     else {
@@ -504,14 +516,14 @@ foreach my $chroot (@chroots) {
                 if (!$found) {
                     my $iface = "$conf->{networking}->{interface}:$first_free_alias";
                     my $cmd = "/sbin/ifconfig $iface $chroot_conf->{ip}";
-                    print " setting up $iface..." unless $options{q};
+                    print_info(" setting up $iface...") unless $options{q};
                     my $r = system($cmd);
                     if ($r == 0) {
-                        print " done.\n" unless $options{q};
+                        print_info(" done.\n") unless $options{q};
                     }
                     else {
-                        print $options{q} ? "Error setting up network alias $iface for $chroot\n" :
-                                            " failure ($cmd).\n";
+                        print_info($options{q} ? "Error setting up network alias $iface for $chroot\n" :
+                                                 " failure ($cmd).\n");
                     }
                 }
             }
@@ -520,9 +532,9 @@ foreach my $chroot (@chroots) {
 
     # Execute init scripts
     my @init_scripts = get_init_scripts($chroot, $init_level, $filter);
-    @init_scripts || print STDERR "WARNING: Can't find any init script in init level $init_level in $chroot\n";
+    @init_scripts || print_warning("WARNING: Can't find any init script in init level $init_level in $chroot\n");
     foreach my $init_script (@init_scripts) {
-        print "Executing $init_script in chroot $chroot...\n" if $options{v};
+        print_info("Executing $init_script in chroot $chroot...\n") if $options{v};
 	system("$chroot_cmd $chroot $init_script $action") unless $options{n};
     }
 
@@ -530,35 +542,35 @@ foreach my $chroot (@chroots) {
         foreach my $dir_info (bind_dirs($chroot, $chroot_conf)) {
             my $ret = unbind($dir_info->[1]);
             if (! $ret and !$options{q}) {
-                print STDERR "WARNING: Couldn't unbind directory $dir_info->[1]\n";
+                print_warning("WARNING: Couldn't unbind directory $dir_info->[1]\n");
             }
         }
 
         # Network interface alias
         if ($conf->{networking}->{interface}) {
-            print "Bringing down network interface alias..." unless $options{q};
+            print_info("Bringing down network interface alias...") unless $options{q};
             my $s = IO::Socket::INET->new(Proto => 'udp');
             my @interfaces = grep /^$conf->{networking}->{interface}:/, $s->if_list;
             my $found = 0;
             for my $if (@interfaces) {
                 if ($s->if_addr($if) eq $chroot_conf->{ip}) {
-                    print " found ($if -> $chroot_conf->{ip})..." unless $options{q};
+                    print_info(" found ($if -> $chroot_conf->{ip})...") unless $options{q};
                     my $cmd = "/sbin/ifconfig $if down";
                     my $r = system($cmd);
                     if ($r == 0) {
-                        print " done.\n" unless $options{q};
+                        print_info(" done.\n") unless $options{q};
                     }
                     else {
-                        print $options{q} ? "Error bringing down network alias $if for $chroot\n" :
-                                            " failure ($cmd).\n";
+                        print_warning($options{q} ? "Error bringing down network alias $if for $chroot\n" :
+                                                    " failure ($cmd).\n");
                     }
                     $found = 1;
                 }
             }
 
             if (!$found && !$options{q}) {
-                print " failure.\n";
-                print "Couldn't bring down interface alias for $chroot_conf->{ip}: not found\n";
+                print_info(" failure.\n");
+                print_warning("Couldn't bring down interface alias for $chroot_conf->{ip}: not found\n");
             }
         }
     }
