@@ -467,6 +467,7 @@ foreach my $chroot (@chroots) {
             foreach my $preload (@{$chroot_conf->{preload}}) {
                 # First, check it's already there. If not, try to copy from
                 # host filesystem
+                # Also copy it if the host one is newer (see else block below)
                 if (! -r "$chroot/$preload") {
                     if (-r $preload) {
                         print_warning("WARNING: Copying $preload to $chroot\n")
@@ -477,6 +478,10 @@ foreach my $chroot (@chroots) {
                         print_warning("ERROR: Can't find $preload either in $chroot nor in host filesystem\n");
                         exit 1;
                     }
+                }
+                elsif ((stat($preload))[9] > (stat("$chroot/$preload"))[9]) {
+                    print_warning("Upgrading $preload in $chroot\n");
+                    copy $preload, "$chroot/$preload";
                 }
 
                 # Supposedly, it's already there. Now check if it's loaded from
