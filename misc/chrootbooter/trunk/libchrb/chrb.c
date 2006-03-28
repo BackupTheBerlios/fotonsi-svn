@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <dlfcn.h>
 #include <errno.h>
@@ -8,6 +9,9 @@
 #include <arpa/inet.h>
 #include <stdarg.h>
 #include <sys/utsname.h>
+#include <sys/types.h>
+#include <signal.h>
+
 
 /* Funciones para uso de la propia librería */
 static void _rstrip(char* cad)
@@ -25,9 +29,11 @@ static void _rstrip(char* cad)
 
 typedef int (*type_fnmount)(const char*, const char*, const char*, unsigned long, const void*);
 typedef int (*type_fnbind)(int, __CONST_SOCKADDR_ARG, socklen_t);
+typedef int (*type_fnkill)(pid_t, int);
 
 type_fnmount fnmount;
 type_fnbind fnbind;
+type_fnkill fnkill;
 
 static void _init_funcs()
 {
@@ -37,6 +43,7 @@ static void _init_funcs()
 
         fnmount = (type_fnmount)dlsym(dl, "mount");
         fnbind = (type_fnbind)dlsym(dl, "bind");
+        fnkill = (type_fnkill)dlsym(dl, "kill");
 
         dlclose(dl);
         loaded = 0;
@@ -138,7 +145,7 @@ int bind (
 }
 
 
-/* Sustitución de gethostname para forzar que lea el nombre del host
+/* Sustitución de gethostname(2) para forzar que lea el nombre del host
  * siempre desde el fichero /etc/hostname
  */
 
@@ -158,5 +165,35 @@ int gethostname(char* cadena, size_t lon)
     }
 
     return 0;
+}
+
+/* Sustitución de kill(2) para no que mande señales a procesos que no son del
+ * propio chroot.
+ *
+ * Esta primitiva manda una señal a un determinado proceso. La verificación
+ * que hacemos aquí es que ese proceso pertenezca al chroot del mismo proceso
+ * que le manda la señal. Esta comprobación se hace mirando a dónde apunta el
+ * enlace simbólico de /proc/PID/root.
+ *
+ * Si el /proc no está montado en /proc no se pondrá lanzar ninguna señal a 
+ * ningún proceso.
+ *
+ * En caso de mandar una señal a un proceso que no es de su chroot, se le devuelve
+ * el eror EPERM (permiso denegado).
+ */
+int kill(pid_t pid, int sig)
+{
+    char pathproc[32];
+    char rootdir[128];
+
+    _init_funcs();
+
+    snprintf(pathproc, sizeof(pathproc), "/proc/%d/root", pid);
+    if (readlink(pathproc, rootdir, sizeof(rootdir)) != 1) {
+        errno = EPERM;
+        return -1;
+    }
+
+    return fnkill(pid, sig);
 }
 
