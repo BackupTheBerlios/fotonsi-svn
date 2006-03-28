@@ -497,7 +497,7 @@ foreach my $chroot (@chroots) {
             }
 
             # Network interface alias
-            if ($conf->{networking}->{interface}) {
+            if ($conf->{networking}->{interface} && $chroot_conf->{ip}) {
                 print_info("Checking network interface alias...") unless $options{q};
                 my $s = IO::Socket::INET->new(Proto => 'udp');
                 my @interfaces = grep /^$conf->{networking}->{interface}:/, $s->if_list;
@@ -547,7 +547,7 @@ foreach my $chroot (@chroots) {
         }
 
         # Network interface alias
-        if ($conf->{networking}->{interface}) {
+        if ($conf->{networking}->{interface} && $chroot_conf->{ip}) {
             print_info("Bringing down network interface alias...") unless $options{q};
             my $s = IO::Socket::INET->new(Proto => 'udp');
             my @interfaces = grep /^$conf->{networking}->{interface}:/, $s->if_list;
