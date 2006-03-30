@@ -3,10 +3,10 @@ Section: libs
 Priority: optional
 Maintainer: %{MAINTAINER}
 Standards-Version: 3.6.2
-Depends: %{DEPENDS}
 Build-Depends-Indep: %{BUILD_DEPENDS}
 
 Package: %{PACKAGE}
+Depends: %{DEPENDS}
 Architecture: all
 Description: %{DESCRIPTION}
  %{DESCRIPTION} (long description)
