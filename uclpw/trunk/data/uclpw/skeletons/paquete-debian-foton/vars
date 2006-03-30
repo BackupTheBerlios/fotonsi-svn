@@ -4,3 +4,6 @@ MAINTAINER = Fotón Sistemas Inteligentes
 EMAIL = info@foton.es
 AUTHOR = Fotón Sistemas Inteligentes
 URL = http://fotonsi.berlios.de
+DESCRIPTION = Modulo de Foton
+DEPENDS = 
+BUILD_DEPENDS = 

@@ -1,8 +1,10 @@
 Source: %{PACKAGE}
-Section: interpreters
+Section: libs
 Priority: optional
 Maintainer: %{MAINTAINER}
 Standards-Version: 3.6.2
+Depends: %{DEPENDS}
+Build-Depends-Indep: %{BUILD_DEPENDS}
 
 Package: %{PACKAGE}
 Architecture: all
