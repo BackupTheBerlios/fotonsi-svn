@@ -357,7 +357,10 @@ sub unbind {
     my ($chroot_dir) = @_;
 
     if (is_bound($chroot_dir)) {
-        return 0 if system "umount $chroot_dir";
+        if (system("umount $chroot_dir") != 0) {
+            print_warning("WARNING: Couldn't unbind $chroot_dir, trying with lazy option\n");
+            return 0 if system("umount -l $chroot_dir") != 0;
+        }
     }
     return 1;
 }
