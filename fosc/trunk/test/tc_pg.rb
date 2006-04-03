@@ -13,7 +13,7 @@ class TC_Pg <Test::Unit::TestCase
    end
 
    def each_fosc_output_line(file)
-      File.popen("ruby -w bin/fosc test/#{file} pg") do |f|
+      File.popen("ruby -w -Ilib bin/fosc test/#{file} pg") do |f|
          f.each_line do |line|
             yield line
          end
