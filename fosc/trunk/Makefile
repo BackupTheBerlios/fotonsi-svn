@@ -27,4 +27,4 @@ dist: MANIFEST
 	tar cfz fosc-$$VERSION.tar.gz -C $$TMPDIR fosc-$$VERSION; \
 	rm -rf $$TMPDIR
 
-.PHONY: test rdoc
+.PHONY: test rdoc clean dist
