@@ -1,0 +1,20 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>morcego</title>
+</head>
+
+<body>
+<%= morcego_applet({"width" => "1200", "height" => "400"}, { 
+    "startNode" => "Obra-1", "navigationDepth" => "2",
+    "controlWindowName" => "morcego", "isNodePresentMethod" => "isNodePresent",
+    "windowWidth" => "1200", "viewWidth" => "1200"})%>
+    
+<%= morcego_iframe("morcego", "morcego-wiki-content") %>
+
+<div id="morcego-wiki-content">Text to change</div>
+
+</body>
+
+</html>

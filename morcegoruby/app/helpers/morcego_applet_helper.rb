@@ -1,0 +1,2 @@
+module MorcegoAppletHelper
+end
