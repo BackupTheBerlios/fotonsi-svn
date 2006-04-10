@@ -1,0 +1,39 @@
+
+
+div.errorbox {
+    position: fixed;
+    border: outset red 1px;
+    top: 4px;
+    right: 4px;
+    background: #f44;
+    color: white;
+    padding: 1em 0 0 0;
+    text-align: center;
+    font-weight: bold;
+    font-size: 12pt;
+    -moz-border-radius: 1em;
+}
+
+div.errorbox div {
+    -moz-border-radius: 1em;
+    margin: 1em 1ex 1ex 1ex;
+    font-size: 1.2ex;
+    font-weight: normal;
+    background-color: #fff;
+    color: black;
+    padding: 1em 1em 1em 0;
+    border: inset red 1px;
+}
+
+/*div.errorbox ul { padding: 0; } */
+div.errorbox li { list-style: decimal; }
+div.errorbox a {text-decoration: none; }
+div.errorbox a:hover { background: #eef; }
+
+div.errorbox img {
+    border: 2px outset red;
+    position: absolute;
+    right: 1.2ex;
+    top: 1ex;
+    cursor: pointer;
+}
