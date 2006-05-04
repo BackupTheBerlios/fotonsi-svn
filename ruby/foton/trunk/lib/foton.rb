@@ -1,3 +1,5 @@
 module Foton
-    VERSION = 0.11
+    VERSION = 0.20
 end
+
+require 'foton/misc'
