@@ -5,7 +5,7 @@ $DEBUG = nil
 $LOAD_PATH << '/usr/share/fosc'
 
 module Fosc
-   VERSION = '0.3cvs'
+   VERSION = '0.4'
 
    class FosConverter
       attr_reader :dataBase
@@ -60,12 +60,14 @@ module Fosc
                   # Store the element driver in a safe place
                   elementDriver = Fosc::Elements.const_get(className).
                                                             new(elementName)
-               rescue LoadError
-                  $stderr.puts "Could not load 'elements/#{elementType}' for element #{elementName}"
-                  exit 1
-               rescue NameError
-                  $stderr.puts "Unknown element type '#{elementType}' (could not find Fosc::Elements::#{className})"
-                  exit 1
+               rescue LoadError => e
+                  raise Fosc::Elements::NonExistentElementError.new(elementType, e)
+               rescue NameError => e
+                  if [:Elements, className.to_sym].include? e.name
+                     raise Fosc::Elements::InvalidElementError.new(elementType, e)
+                  else
+                     raise
+                  end
                end
                $stderr.puts "New element: #{line} -----------" if $DEBUG
             end

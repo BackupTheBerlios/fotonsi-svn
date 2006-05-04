@@ -5,14 +5,33 @@ module Fosc
       # Useful constants
       TILDE_SEPARATOR_LINE = /^\s*~+\s*$/
 
-      # Bad syntax exception
-      class FosSyntaxError < RuntimeError
-         attr_reader :msg, :line, :details
+      # Base exception class
+      class Exception < RuntimeError; end
 
+      # Bad syntax exception
+      class FosSyntaxError < Exception
+         attr_reader :msg, :line, :details
          def initialize(msg, line, details=nil)
             @msg, @line, @details = msg, line, details
          end
       end
+
+      # Non-existent element
+      class NonExistentElementError < Exception
+         def initialize(plugin_name, original_exception)
+            @plugin_name = plugin_name
+            @message = original_exception.message
+         end
+      end
+
+      # Invalid element
+      class InvalidElementError < Exception
+         def initialize(plugin_name, original_exception)
+            @plugin_name = plugin_name
+            @message = original_exception.message
+         end
+      end
+
 
       # Base FOS-DB element class
       class BaseElement

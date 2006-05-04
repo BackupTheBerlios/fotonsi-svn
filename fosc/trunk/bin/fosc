@@ -44,7 +44,12 @@ class FoscApp < CommandLine::Application
         driverType       ||= 'mysql'
 
         fc = Fosc::FosConverter.new(@fosc_options)
-        fc.convert_file(fich)
+
+        begin
+            fc.convert_file(fich)
+        rescue Fosc::Elements::Exception => e
+            $stderr.puts "Could not load 'elements/#{elementType}' for element #{elementName}: #{e}"
+        end
 
         begin
             require "plugins/#{driverType}"

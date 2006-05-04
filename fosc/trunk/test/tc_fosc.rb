@@ -3,21 +3,21 @@
 
 require 'test/unit'
 require 'fosc'
+require 'elements/base_element'
 
 class TC_Fosc <Test::Unit::TestCase
-   def setup
-      @conv = Fosc::FosConverter.new
-   end
-   def test_file1
-      db = @conv.convert_file('test/test1.fos')
-
-      assert_equal(1, db.tables.length)
-      some_table = db.tables[0]
-      assert_equal('some_table', some_table.name)
-      assert_equal(2, some_table.fields.length)
-      assert(some_table.fields[1].attributes.include?('unique'))
-   end
-   def teardown
-      @conv = nil
-   end
+    def setup
+        @conv = Fosc::FosConverter.new
+    end
+    def test_plugin_loader
+        assert_raises(Fosc::Elements::NonExistentElementError) do
+            db = @conv.convert_file('test/test-element-non-existent.fos')
+        end
+        assert_raises(Fosc::Elements::InvalidElementError) do
+            db = @conv.convert_file('test/test-element-invalid.fos')
+        end
+    end
+    def teardown
+        @conv = nil
+    end
 end
