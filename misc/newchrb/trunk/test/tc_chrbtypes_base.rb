@@ -65,7 +65,7 @@ module TestChrbTypes
                                    {:first_prop  => 'Value for the first prop',
                                     :second_prop => "Some 'other' value"})
         # Check everything's OK
-        assert_equal("", `diff -ur #{dest_dir} #{expected_dir} 2>&1`)
+        assert_equal("", `diff -ur --exclude .svn #{dest_dir} #{expected_dir} 2>&1`)
         # Clean up
         FileUtils.rm_rf tmp_dir
     end
