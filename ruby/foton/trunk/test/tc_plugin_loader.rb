@@ -5,7 +5,7 @@ require 'test/unit'
 require 'test/plugin_base'
 require 'foton/plugin_loader'
 
-class TC_Foton <Test::Unit::TestCase
+class TC_Foton_Plugin_Loader <Test::Unit::TestCase
    def setup
       @pluginLoader = Foton::PluginLoader.new('test/plugindir')
       @pluginLoaderBaseClass = Foton::PluginLoader.new('test/plugindir', PluginBase)
