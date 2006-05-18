@@ -20,8 +20,6 @@ module Rucola
             end
         end
 
-        attr_reader :conf
-
         def initialize(basename)
             @conf = {}
             # Try to read hidden configuration first, then the regular one
@@ -38,6 +36,18 @@ module Rucola
 
         def configuration_dirs
             self.class.configuration_dirs
+        end
+
+        def [](key)
+            @conf[key]
+        end
+
+        def []=(key)
+            @conf[key]
+        end
+
+        def to_hash
+            @conf
         end
     end
 end

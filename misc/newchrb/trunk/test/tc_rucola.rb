@@ -25,7 +25,7 @@ module TestRucola
         test_conf_spec = {:test => [['test/conf'], lambda {|foo| "#{foo}.conf"}]}
         Rucola::Conf.configuration_dirs = test_conf_spec
         r = Rucola::Conf.new('testapp')
-        assert_equal({:foo => 'bar', :qux => 2}, r.conf)
+        assert_equal({:foo => 'bar', :qux => 2}, r.to_hash)
     end
   end
 end
