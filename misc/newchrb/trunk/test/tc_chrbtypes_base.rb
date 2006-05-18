@@ -12,10 +12,10 @@ module TestChrbTypes
     def test_base_chrbtype_class_methods
         require 'chrb_types/test_chrb'
 
-        assert_equal(2, ChrbTypes::TestChrb.properties.size,
+        assert_equal(3, ChrbTypes::TestChrb.properties.size,
                                             "No. of properties")
-        assert_equal(:first_prop, ChrbTypes::TestChrb.properties[0].name)
-        assert_equal("Second test property", ChrbTypes::TestChrb.properties[1].description)
+        assert_equal(:first_prop, ChrbTypes::TestChrb.properties[1].name)
+        assert_equal("Second test property", ChrbTypes::TestChrb.properties[2].description)
         assert_equal(1, ChrbTypes::TestChrb.erb_templates.size,
                                             "No. of ERB templates")
     end
@@ -35,8 +35,8 @@ module TestChrbTypes
     def test_property_attributes
         require 'chrb_types/property_test'
         p_list = ChrbTypes::PropertyTest.properties
-        assert_equal(2, p_list.size)
-        assert_equal('some default value', p_list[0].default)
+        assert_equal(3, p_list.size)
+        assert_equal('some default value', p_list[1].default)
 
         assert_raise(ChrbTypes::BadChrbError) do
             require 'chrb_types/bad_chrb'
@@ -62,7 +62,8 @@ module TestChrbTypes
         dest_dir     = File.join(tmp_dir, 'test_chrb')
         expected_dir = File.join('test', 'repo', 'test_chrb')
         ChrbTypes::TestChrb.create(dest_dir,
-                                   {:first_prop  => 'Value for the first prop',
+                                   {:chrb_name   => "test_chrb",
+                                    :first_prop  => 'Value for the first prop',
                                     :second_prop => "Some 'other' value"})
         # Check everything's OK
         assert_equal("", `diff -ur --exclude .svn #{dest_dir} #{expected_dir} 2>&1`)

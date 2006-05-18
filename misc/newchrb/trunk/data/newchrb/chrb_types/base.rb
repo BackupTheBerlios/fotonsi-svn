@@ -46,13 +46,18 @@ module ChrbTypes
 
     class Base
         class <<self
-            attr_reader :properties
             attr_writer :chrb_repo_dir
 
             # Declares a new property for the chrb
             def property(name, opts)
                 @properties ||= []
                 @properties << Property.new(name, opts)
+            end
+
+            # Returns the properties for the chrb type
+            def properties
+                @properties ||= []
+                return((superclass.respond_to?(:properties) ? superclass.properties : []) + @properties)
             end
 
             # Declares a file that is created from an ERB source file. You
@@ -144,7 +149,7 @@ module ChrbTypes
                     end
                 end
 
-                raise ChrbNotFoundError, "Can't find template for chrb '#{base_filename}'. Tried extensions: #{METHODS_EXTENSIONS.values.flatten.join(", ")}"
+                raise ChrbNotFoundError, "Can't find chrb template in '#{base_filename}'. Tried extensions: #{METHODS_EXTENSIONS.values.flatten.join(", ")}"
             end
 
             def unpack_bz2(filename, dest_dir)
@@ -175,5 +180,8 @@ module ChrbTypes
                 FileUtils.mv(File.join(dirname, 'root'), File.join(dirname, basename))
             end
         end
+
+        # Base properties
+        property        :chrb_name, :description => 'Hostname for the new chrb?'
     end
 end
