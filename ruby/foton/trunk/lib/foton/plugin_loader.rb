@@ -1,4 +1,4 @@
-# Plugin loader. Takes a directory and optionally a base class. The directory 
+# Plugin loader. Takes a directory and optionally a base class. The directory
 # is the prefix directory where plugins can be found, and the optional base
 # class is the class where plugins are stored.
 # Each plugin is a class, loaded from a file whose name is obtained
@@ -36,11 +36,11 @@ module Foton
             end
             list
         end
- 
+
         # Gets a plugin by name
         def plugin(c, pars=[])
             fileName = class_to_filename c
- 
+
             begin
                 require pluginDir + '/' + fileName
                 pluginClass = eval(c.gsub('^([a-zA-Z]+).*', '\1'))
@@ -49,7 +49,7 @@ module Foton
             rescue NameError => e
                 raise PluginLoadError, "Can't load plugin #{c} (file '#{fileName}'). Details: #{e}"
             end
- 
+
             begin
                 obj = pluginClass.new(*pars)
             rescue ArgumentError => e
@@ -60,7 +60,7 @@ module Foton
             end
             obj
         end
- 
+
         # Gets a plugin by index (starts with 0)
         def pluginByIndex(i)
            plugin(avail_plugins[i])
