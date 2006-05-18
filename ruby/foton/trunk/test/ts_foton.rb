@@ -3,6 +3,7 @@
 
 require 'test/tc_foton'
 require 'test/tc_plugin_loader'
+require 'test/tc_plugin_utils'
 require 'test/tc_latex_pdf_compiler'
 
 class TS_Foton

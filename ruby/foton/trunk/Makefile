@@ -1,5 +1,5 @@
 test:
-	ruby -w -Ilib test/ts_foton.rb
+	ruby -w -Ilib:test/lib test/ts_foton.rb
 
 clean:
 	ruby -w setup.rb clean
