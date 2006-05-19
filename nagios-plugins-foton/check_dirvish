@@ -84,7 +84,7 @@ do
 			ALERTA=$STATE_ERROR
 		fi
 	fi
-
-	echo $DESC
-	exit $ALERTA
 done
+
+echo $DESC
+exit $ALERTA
