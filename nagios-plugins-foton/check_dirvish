@@ -41,7 +41,7 @@ FECHA_ACT=`date +"%Y%m%d%H%M"`
 RAIZ=`cat /etc/dirvish/master.conf | grep -A 1 "bank:" | grep -v "bank:" | awk '{print $1}'`
 
 # Cogemos las entradas de runall y eliminamos los caracteres superfluos ("", :, etc...) de las fechas
-RUNALL=`dirvish-runall --no-run | tr " " "." | tr -d "\"" | tr -d ":"` |grep -v ".done$"
+RUNALL=`dirvish-runall --no-run | tr " " "." | tr -d "\"" | tr -d ":" |grep -v ".done$"`
 
 # Iteramos sobre cada entrada de runall
 for ENTRADA in $RUNALL
