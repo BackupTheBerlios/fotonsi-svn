@@ -15,8 +15,15 @@ MSGRET=""
 
 # Modo de uso
 print_usage() {
-        echo "Usage: $PROGNAME"
+        echo "Usage: check_dirvish [-h|--help]"
         echo ""
+		echo "El plugin se ejecuta desde el nagios directamente, sin pasarle parámetros"
+		echo ""
+		echo "Devuelve el listado de clientes para los que no hay copia de seguridad,"
+		echo "y el código de estado correspondiente a:"
+		echo ""
+		echo "WARNING si se ha hecho copia pero existe el fichero rsync_error"
+		echo "ERROR si no se ha hecho la copia"
 }
 
 # Ayuda
@@ -26,6 +33,34 @@ print_help() {
         echo ""
         print_usage
 }
+
+# Parse the command line arguments
+
+#path=$1
+exitstatus=$STATE_WARNING #default
+verbose=0 #default
+
+while test -n "$1"; do
+    case "$1" in
+        --help)
+            print_help
+            exit $STATE_UNKNOWN
+            ;;
+        -h)
+            print_help
+            exit $STATE_UNKNOWN
+            ;;
+        --version)
+            print_help
+            exit $STATE_UNKNOWN
+            ;;
+        -V)
+            print_help
+            exit $STATE_UNKNOWN
+            ;;
+	esac
+	shift
+done
 
 # Variable con el cÃ³digo de alerta a enviar.
 # Prevalece ERROR sobre WARNING
