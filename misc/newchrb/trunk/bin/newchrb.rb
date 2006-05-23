@@ -40,7 +40,7 @@ class NewChrbApp < CommandLine::Application
             $stderr.puts "Can't load plugin '#{chrb_type}' (details follow):\n#{e}"
             exit(1)
         end
-        say("Preparing new chrb of type '#{chrb_type}'")
+        say(%Q(<%= color("Preparing new chrb of type '#{chrb_type}'", BOLD) %>))
         say("----------------------------#{'-' * chrb_type.size}-")
         attrs = NewChrb.retrieve_chrb_property_values(type_plugin.properties)
 
