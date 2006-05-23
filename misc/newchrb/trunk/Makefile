@@ -3,7 +3,7 @@ DIST_BASE_NAME=newchrb
 all: rdoc
 
 rdoc:
-	# rdoc bin README INSTALL lib/ data/fosc/plugins/
+	rdoc bin README lib/ data/newchrb/
 
 test:
 	RUBYLIB=lib:data/newchrb:test/lib ruby -w test/ts_newchrb.rb

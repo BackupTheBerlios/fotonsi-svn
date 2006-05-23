@@ -1,0 +1,101 @@
+= NewChrb
+
+NewChrb is a little utility to create new chrbs from templates. Each template
+defines its own set of questions, which are asked to the user prior to creating
+the new chrb.
+
+
+= Basic Usage
+
+The utility is called like this:
+
+ newchrb some_chrb_type
+ newchrb some_chrb_type /some/destination/dir
+ newchrb -r /path/to/chrb/images some_other_chrb_type
+ newchrb -r /path/to/chrb/images some_other_chrb_type /some/dir
+
+It will create a new +chrb+ in the current directory, or on the specified one
+(the second parameter). Optionally, you can define the directory the +chrb+
+images reside in.
+
+
+== A Typical +newchrb+ session
+
+ hunter:# newchrb foton
+ Preparing new chrb of type 'foton'
+ ----------------------------------
+ Hostname for the new chrb?
+ some_chrb_name
+ Is the new chroot going to be installed in Foton's intranet? [y] (y or n)
+ IP address (only for Foton's intranet)?
+ 192.168.2.120
+ --------------------
+ New chrb properties:
+ chrb_name = some_chrb_name
+ intranet = true
+ ip = 192.168.2.120
+ Is it OK? (y or n) y
+ Unpacking /home/zoso/tmp/chroots/foton
+ Done.
+ hunter:# ls -l some_chrb_name/
+ total 11
+ drwxr-xr-x  2 root root  1992 2006-03-24 10:19 bin
+ drwxr-xr-x  2 root root    48 2004-12-15 22:55 boot
+ drwxr-xr-x  4 root root  1968 2006-01-27 18:53 dev
+ drwxr-xr-x 41 root root  2792 2006-05-23 19:36 etc
+ drwxrwsr-x  2 root staff   48 2004-12-15 22:55 home
+ drwxr-xr-x  2 root root    48 2006-01-27 18:52 initrd
+ drwxr-xr-x  7 root root  3056 2006-01-27 18:52 lib
+ drwxr-xr-x  2 root root    48 2006-01-27 18:52 media
+ drwxr-xr-x  2 root root    48 2004-12-15 22:55 mnt
+ drwxr-xr-x  2 root root    48 2006-01-27 18:52 opt
+ drwxr-xr-x  2 root root    48 2006-04-05 17:26 proc
+ drwxr-xr-x  3 root root   184 2006-04-03 12:32 root
+ drwxr-xr-x  2 root root  2496 2006-03-24 10:19 sbin
+ drwxr-xr-x  2 root root    48 2006-01-27 18:52 srv
+ drwxr-xr-x  2 root root    48 2005-05-10 21:01 sys
+ drwxrwxrwt  2 root root    48 2006-03-24 10:20 tmp
+ drwxr-xr-x 11 root root   288 2006-01-27 18:52 usr
+ drwxr-xr-x 13 root root   312 2006-01-27 18:52 var
+
+
+= The +chrb+ Templates
+
+Each template is a <tt>.tar.gz</tt>, <tt>.tgz</tt>, <tt>.tbz</tt> or
+<tt>.tar.bz2</tt> file, which uncompress to a +root+ directory with a complete
+system in it (like a +chroot+).
+
+Apart from the compressed image, each +chrb+ template needs a Ruby file, with a
+simple Ruby class defining the properties needed to create the +chrb+ (they
+will be asked to the user), and the dynamically-generated files. An example of
++chrb+ definition is:
+
+ require 'chrb_types/base'
+ 
+ module ChrbTypes
+     class Foton < ChrbTypes::Base
+         property      :intranet, :description => "Is the new chroot going to be installed in Foton's intranet?", :default => "y", :type => :boolean
+         property      :ip,       :description => "IP address (only for Foton's intranet)?"
+         erb_templates '/etc/hostname',
+                       '/etc/mailname'
+     end
+ end
+
+Each property has a name (which we will use to refer to its value, in the
+generated file templates), a description (the text shown to the user when
+asking for its value), an optionally a default value and a type. Available
+types are <tt>:string</tt>, <tt>:boolean</tt> and <tt>:integer</tt>, which will
+yield objects of classes +String+, <tt>TrueClass/FalseClass</tt> or +Integer+,
+respectively.
+
+Each generated file should exist in the +chroot+ as <tt>/whole/path.erb</tt>,
+if the final path is <tt>/whole/path</tt>. The template files (the
+<tt>.erb</tt> ones) should be in ERB format, and the properties will be
+available as *local* variables. An example of a ERB template could be:
+
+ 127.0.0.1       localhost.localdomain   localhost  <%= chrb_name %>
+ <%= ip %>  <%= chrb_name %>
+ <% unless intranet %>
+ # Static DNS entry when working outside the intranet
+ 127.0.0.1       www.foton.es    www
+ <% end %>
