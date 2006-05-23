@@ -5,9 +5,9 @@ require 'yaml'
 module Rucola
     # Configuration dir specs
     CONFIGURATION_DIRS = {:regular => [['/usr/local/etc', '/etc'],
-                                       lambda {|n| n}],
+                                       lambda {|n| n+".conf"}],
                           :hidden  => [[ENV['HOME']],
-                                       lambda {|n| ".#{n}"}]}
+                                       lambda {|n| ".#{n}.conf"}]}
 
     # RUCO's main class
     class Conf
@@ -27,11 +27,19 @@ module Rucola
                 spec[0].each do |dir|
                     path = File.join(dir, spec[1].call(basename))
                     if File.readable? path
-                        File.open(path) {|f| @conf = YAML::load(f)}
+                        File.open(path) {|f| @conf = simbolize_keys(YAML::load(f))}
                         return
                     end
                 end
             end
+        end
+
+        def simbolize_keys(hash)
+            h = {}
+            hash.each_pair do |key,value|
+                h[key.to_sym] = value
+            end
+            h
         end
 
         def configuration_dirs
@@ -39,11 +47,11 @@ module Rucola
         end
 
         def [](key)
-            @conf[key]
+            @conf[key.to_sym]
         end
 
         def []=(key)
-            @conf[key]
+            @conf[key.to_sym]
         end
 
         def to_hash
