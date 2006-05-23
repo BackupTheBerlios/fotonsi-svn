@@ -16,7 +16,6 @@ module NewChrb
                     case prop.type
                     when :integer
                         value = ask(prop.description, lambda {|r| r.to_i}) {|q| q.default = prop.default}
-                        say(value)
                     when :boolean
                         choose do |menu|
                             menu.layout  = :one_line
@@ -27,7 +26,6 @@ module NewChrb
                         end
                     else
                         value = ask(prop.description) {|q| q.default = prop.default}
-                        say(value)
                     end
                     values[prop.name] = value
                 end
