@@ -31,7 +31,8 @@ class NewChrbApp < CommandLine::Application
         destination_dir ||= '.'
 
         @conf = Rucola::Conf.new('newchrb')
-        ChrbTypes::Base.chrb_repo_dir = @repo_dir || @conf['repo_dir'] || '.'
+        @repo_dir = nil unless defined? @repo_dir
+        ChrbTypes::Base.chrb_repo_dir = @repo_dir || @conf[:repo_dir] || '.'
 
         begin
             type_plugin = Foton::PluginUtils.load_plugin(filename_to_class(chrb_type), ChrbTypes)
