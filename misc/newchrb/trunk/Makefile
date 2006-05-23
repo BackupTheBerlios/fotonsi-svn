@@ -15,7 +15,7 @@ MANIFEST: clean
 	find | egrep -v /.svn >MANIFEST
 
 dist: MANIFEST
-	VERSION=`ruby -Ilib -rnewchrb -e "print Fosc::VERSION"`; \
+	VERSION=`ruby -Ilib -rnewchrb -e "print NewChrb::VERSION"`; \
 	TMPDIR=tmp.$$$$; \
 	DIR=$$TMPDIR/$(DIST_BASE_NAME)-$$VERSION; \
 	mkdir -p $$DIR; \
