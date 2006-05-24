@@ -16,9 +16,9 @@ module Fosc
             def export(bd)
                 bd.tables.each do |t|
                     tname = t.name.gsub('t_', "")
-                    pFile = File.new("form_#{tname}.py", "w")
-                    tFile = File.new("form_#{tname}.tmpl", "w")
-                    pFile.print <<SALIDA
+                    p_file = File.new("form_#{tname}.py", "w")
+                    t_file = File.new("form_#{tname}.tmpl", "w")
+                    p_file.print <<SALIDA
 # -*- coding: latin1 -*-
 
 '''
@@ -27,8 +27,8 @@ This module has class definitions for webware form.
 Generated at #{Time.new.to_s}.
 Contains the following classes:
 SALIDA
-                    pFile.print "            * form_#{tname}(#{@options['aplic']}Page)"
-                    pFile.print <<SALIDA
+                    p_file.print "            * form_#{tname}(#{@options['aplic']}Page)"
+                    p_file.print <<SALIDA
 
 '''
 from lib.#{@options['aplic'].capitalize} import #{@options['aplic']}Page
@@ -57,7 +57,7 @@ class form_#{tname}(#{@options['aplic']}Page):
         form.add_widget(Widgets.ToolTips, 'tootips')
 
 SALIDA
-                    tFile.print <<SALIDA
+                    t_file.print <<SALIDA
          
         <form method="post">
         <fieldset>
@@ -117,7 +117,7 @@ SALIDA
                                         'selected': '1'"
                         end
          
-                        pFile.print <<SALIDA
+                        p_file.print <<SALIDA
                         
         form.add_widget(Widgets.#{tipo}, '#{f.name}',
             {
@@ -129,7 +129,7 @@ SALIDA
 
 SALIDA
 
-                        tFile.print <<SALIDA
+                        t_file.print <<SALIDA
 
         <tr>
                 <td>\$form.W.#{f.name}.get_label</td>
@@ -138,7 +138,7 @@ SALIDA
 
 SALIDA
                     end
-                    pFile.print <<SALIDA
+                    p_file.print <<SALIDA
 
         form.add_widget(Widgets.ListMultiCol, 'listado',
         {
@@ -151,25 +151,25 @@ SALIDA
 SALIDA
 
                     t.fields.each do |f|
-                        pFile.print "                 {'key': '#{f.name}', 'name': '#{f.name}'},\n";
+                        p_file.print "                 {'key': '#{f.name}', 'name': '#{f.name}'},\n";
                     end
 
                     ntabla = tname.capitalize
 
-                    pFile.print <<SALIDA
+                    p_file.print <<SALIDA
                        ],
                        'data': iface.Get#{ntabla}(),
             'class': 'basica'
         })
 SALIDA
 
-                pFile.print <<SALIDA
+                p_file.print <<SALIDA
 
         t.form = Form.FormTemplate(form)
         self.write(str(t))
                         
 SALIDA
-                tFile.print <<SALIDA
+                t_file.print <<SALIDA
 
         <tr>
         <td colspan="2">
@@ -193,8 +193,8 @@ SALIDA
 
 SALIDA
 
-                    pFile.close
-                    tFile.close
+                    p_file.close
+                    t_file.close
                 end
             end
         end
