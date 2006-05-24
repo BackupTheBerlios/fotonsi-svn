@@ -1,6 +1,3 @@
-#!/bin/bash 
-
-
 # Ruta al proceso en ejecución
 PROGPATH=`echo $0 | /bin/sed -e 's,[\\/][^\\/][^\\/]*$,,'`
 
@@ -23,7 +20,7 @@ print_usage() {
 		echo "y el c�digo de estado correspondiente a:"
 		echo ""
 		echo "WARNING si se ha hecho copia pero existe el fichero rsync_error"
-		echo "ERROR si no se ha hecho la copia"
+		echo "CRITICAL si no se ha hecho la copia"
 }
 
 # Ayuda
@@ -62,9 +59,8 @@ while test -n "$1"; do
 	shift
 done
 
-# Variable con el código de alerta a enviar.
-# Prevalece ERROR sobre WARNING
-ALERTA=$STATE_OK
+# Variable con el código de alerta a enviar (prevalece CRITICAL sobre WARNING)
+ALERTA=$STATE_CRITICAL
 
 # Descripción de la alerta (tipo de alerta y en qué cliente)
 DESC=""
@@ -76,7 +72,7 @@ FECHA_ACT=`date +"%Y%m%d%H%M"`
 RAIZ=`cat /etc/dirvish/master.conf | grep -A 1 "bank:" | grep -v "bank:" | awk '{print $1}'`
 
 # Cogemos las entradas de runall y eliminamos los caracteres superfluos ("", :, etc...) de las fechas
-RUNALL=`dirvish-runall --no-run | tr " " "." | tr -d "\"" | tr -d ":" |grep -v ".done$"`
+RUNALL=`/usr/sbin/dirvish-runall --no-run | tr " " "." | tr -d "\"" | tr -d ":" |grep -v ".done$"`
 
 # Iteramos sobre cada entrada de runall
 for ENTRADA in $RUNALL
@@ -96,46 +92,50 @@ do
 
         if [  $HORAACTUAL -le $HORAVAULT ]
         then
-        #Nuestra hora es mayor o igual por lo que revisamos la copia de ayer
-        # Cogemos la fecha en la cual se debería haber generado la entrada
-           FECHA_ENTRADA="`date -d "-1 day" +"%Y%m%d"``echo $ENTRADA | cut -f6 -d"."`"
+	        #Nuestra hora es mayor o igual por lo que revisamos la copia de ayer
+	        # Cogemos la fecha en la cual se debería haber generado la entrada
+           	FECHA_ENTRADA="`date -d "-23 hour" +"%Y%m%d"``echo $ENTRADA | cut -f6 -d"."`"
         else 
-        #Nuestra hora menor por lo que revisamos la copia de hoy
-        # Cogemos la fecha en la cual se debería haber generado la entrada
-           FECHA_ENTRADA="`date +"%Y%m%d"``echo $ENTRADA | cut -f6 -d"."`"
+	        #Nuestra hora menor por lo que revisamos la copia de hoy
+	        # Cogemos la fecha en la cual se debería haber generado la entrada
+        	FECHA_ENTRADA="`date +"%Y%m%d"``echo $ENTRADA | cut -f6 -d"."`"
         fi
 
-        # Buscamos la fecha en el dirvish.hist
-        grep "$FECHA_ENTRADA" $RUTA_ENTRADA/dirvish/daily.hist > /dev/null
+        ## Buscamos la fecha de la copia en dirvish.hist
 
-        ESTADO_HIST=$?
+	# Si no existe el fichero, devolvemos un error directamente
+	RUTA_DAILY_HIST="$RUTA_ENTRADA/dirvish/daily.hist"
 
-        # Si existe la entrada de la fecha, comprobamos si hay un error de rsync
-        if [ $ESTADO_HIST -eq 0 ]; then
-                # Cogemos la entrada concreta (no sabemos el nombre a priori porque tiene segundos al final)
-                ENTRADA_SEG=`cat $RUTA_ENTRADA/dirvish/daily.hist | grep $FECHA_ENTRADA | awk '{print $1}'`
-
-                # Si existe el fichero, ponemos la alerta en WARNING 
-                if [ -f "$RUTA_ENTRADA/$ENTRADA_SEG/rsync_error" ]; then
-
-                        # ERROR prevalece sobre WARNING
-                        if [ $ALERTA -ne $STATE_ERROR ]; then
-                                ALERTA=$STATE_WARNING
-                        fi
-                        DESC="warning $CLIENTE, `echo $DESC`"
-                fi
+	if [ ! -f $RUTA_DAILY_HIST ]; then
+		ALERTA=$STATE_CRITICAL
+		DESC="$RUTA_DAILY_HIST, `echo $DESC`"
         else
-                # Si no se encontró la fecha (grep devuelve un valor distinto de 0), es que no se hizo la copia	
-                if [ $ESTADO_HIST -ne 0  ]; then
-                        DESC="error $CLIENTE, `echo $DESC`"
-                        ALERTA=$STATE_ERROR
-                fi
-        fi
+		# Buscamos la fecha en dirvish.hist
+		grep "$FECHA_ENTRADA" $RUTA_DAILY_HIST > /dev/null
+	        ESTADO_HIST=$?
 
+	        # Si existe la entrada de la fecha, comprobamos si hay un error de rsync
+       	 	if [ $ESTADO_HIST -eq 0 ]; then
+       	        	# Cogemos la entrada concreta (no sabemos el nombre a priori porque tiene segundos al final)
+	       	         ENTRADA_SEG=`cat $RUTA_ENTRADA/dirvish/daily.hist | grep $FECHA_ENTRADA | awk '{print $1}'`
+
+        	        # Si existe el fichero, ponemos la alerta en WARNING 
+                	if [ -f "$RUTA_ENTRADA/$ENTRADA_SEG/rsync_error" ]; then
+
+                       		# CRITICAL prevalece sobre WARNING
+                        	if [ $ALERTA -ne $STATE_CRITICAL ]; then
+                                	ALERTA=$STATE_WARNING
+                        	fi
+                        	DESC="warning $CLIENTE, `echo $DESC`"
+                	fi
+        	else
+                	# Si no se encontró la fecha (grep devuelve un valor distinto de 0), es que no se hizo la copia	
+                	if [ $ESTADO_HIST -ne 0  ]; then
+                        	DESC="error $CLIENTE, `echo $DESC`"
+                        	ALERTA=$STATE_CRITICAL
+                	fi
+        	fi
+	fi
 done
-        echo $DESC
-        exit $ALERTA
-
-
-
-
+echo $DESC
+exit $ALERTA
