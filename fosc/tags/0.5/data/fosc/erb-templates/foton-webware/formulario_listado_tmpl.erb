@@ -1,0 +1,44 @@
+<%
+    tname = @element.name
+    t     = @element
+
+%>
+
+        <form $form.form_attributes method="post">
+        <fieldset>
+        <legend><%= tname %></legend>
+        <div class="fondo">
+        <table class="basica">
+
+<%
+        t.fields.each do |f|
+        
+%>
+        <tr>
+                <td>$form.W.<%= f.name %>.get_label</td>
+                <td width="100%">$form.<%= f.name %></td>
+        </tr>
+
+<%
+                    end
+%>
+
+        <tr>
+        <td colspan="2">
+        <div id="botonera">
+                <input type="submit" value="Guardar" name="Guardar" />
+                <input type="submit" value="Nuevo" name="Nuevo" />
+        </div>
+        </td>
+        </tr>
+
+        <tr>
+        <td colspan="2">
+                $form.listado
+        </td>
+        </tr>
+
+        </table>
+        </div>
+        </fieldset>
+        </form>
