@@ -17,78 +17,80 @@ have an alias, to be used in the SQL definition. An example:
 require 'elements/base_element'
 
 module Fosc
-   module Elements
-      class View < BaseElement
-         attr_reader :fields, :sqlDefinition, :attributes
+    module Elements
+        class View < BaseElement
+            attr_reader :fields, :sql_definition, :attributes
+            alias_method :sqlDefinition, :sql_definition
 
-         def initialize(*args)
-            super
-            @sqlDefinition = ""
-            @fields        = []
-            @attributes    = []
-         end
-
-         def import(data)
-            state = 'fields'
-            lineNumber = 0
-            data.each do |line|
-               lineNumber = lineNumber.next
-               if state == 'fields'
-                  # «Extra» block begins
-                  if line =~ TILDE_SEPARATOR_LINE
-                     state = 'sql_def'
-                     next
-                  end
-
-                  # Field definition
-                  line =~ /^\s*(([a-z0-9_]+)\.)?([a-z0-9_]+)(\s+as\s+([a-z0-9_]+)?\s*)?$/i
-                  optTable, fieldName, optAlias = $2, $3, $5
-                  # Second attempt, this time looking for a random expression
-                  unless fieldName
-                      line =~ /^\s*(.+?)(\s+as\s+([a-z0-9_]+)?\s*)?$/i
-                      optTable, fieldName, optAlias = nil, $1, $3
-                  end
-                  fieldName or raise FosSyntaxError.new("Syntax error in view #{name}", lineNumber, "Can't find field name in #{line}")
-                  @fields << ViewField.new(fieldName, optTable, optAlias)
-               elsif state == 'sql_def'
-                  # Definition end
-                  if line == ''
-                     state = ''
-                     next
-                  elsif line =~ /^\s*~+\s*$/
-                     state = 'options'
-                     next
-                  end
-                  # SQL definition
-                  @sqlDefinition += line
-               elsif state == 'options'
-                  # Definition end
-                  if line == ''
-                     state = ''
-                     next
-                  end
-                  @attributes << ElementAttribute.import(line)
-               else
-                  # Skip blank lines
-                  next if line == ''
-                  raise FosSyntaxError, "Unexpected content: #{line}"
-               end
+            def initialize(*args)
+                super
+                @sql_definition = ""
+                @fields         = []
+                @attributes     = []
             end
-            @sqlDefinition != '' or raise FosSyntaxError, "View definition without SQL definition"
-            self
-         end
 
+            def import(data)
+                state = 'fields'
+                line_number = 0
+                data.each do |line|
+                    line_number = line_number.next
+                    if state == 'fields'
+                        # «Extra» block begins
+                        if line =~ TILDE_SEPARATOR_LINE
+                            state = 'sql_def'
+                            next
+                        end
 
-         # View field
-         class ViewField
-            attr_accessor :name, :fieldAlias, :table
-
-            def initialize(name, table, fieldAlias = nil)
-               @name       = name
-               @table      = table
-               @fieldAlias = fieldAlias
+                        # Field definition
+                        line =~ /^\s*(([a-z0-9_]+)\.)?([a-z0-9_]+)(\s+as\s+([a-z0-9_]+)?\s*)?$/i
+                        opt_table, field_name, opt_alias = $2, $3, $5
+                        # Second attempt, this time looking for a random expression
+                        unless field_name
+                            line =~ /^\s*(.+?)(\s+as\s+([a-z0-9_]+)?\s*)?$/i
+                            opt_table, field_name, opt_alias = nil, $1, $3
+                        end
+                        field_name or raise FosSyntaxError.new(@name, "Syntax error in view #{name}: Can't find field name in #{line}", line_number)
+                        @fields << ViewField.new(field_name, opt_table, opt_alias)
+                    elsif state == 'sql_def'
+                        # Definition end
+                        if line == ''
+                            state = ''
+                            next
+                        elsif line =~ /^\s*~+\s*$/
+                            state = 'options'
+                            next
+                        end
+                        # SQL definition
+                        @sql_definition += line
+                    elsif state == 'options'
+                        # Definition end
+                        if line == ''
+                            state = ''
+                            next
+                        end
+                        @attributes << ElementAttribute.import(line)
+                    else
+                        # Skip blank lines
+                        next if line == ''
+                        raise FosSyntaxError.new(@name, "Unexpected content: #{line}", line_number)
+                    end
+                end
+                @sql_definition != '' or raise FosSyntaxError.new(@name, "View definition without SQL definition", line_number)
+                self
             end
-         end
-      end
-   end
+
+
+            # View field
+            class ViewField
+                attr_accessor :name, :field_alias, :table
+                alias_method :fieldAlias, :field_alias
+
+                def initialize(name, table, field_alias = nil)
+                    @name        = name
+                    @table       = table
+                    @field_alias = field_alias
+                end
+            end
+        end
+    end
 end
