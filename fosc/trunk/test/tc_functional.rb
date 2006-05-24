@@ -24,4 +24,15 @@ class TC_Functional <Test::Unit::TestCase
         end
         assert(found)
     end
+
+    def test_t_command_line_switch
+        expected = <<EOS
+CREATE TABLE some_table (
+  id serial,
+  some_field int,
+  PRIMARY KEY(id)
+);
+EOS
+        assert_fosc_output(expected, 'test-access.fos', 'pg -t some_table')
+    end
 end

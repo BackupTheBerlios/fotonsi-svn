@@ -28,13 +28,13 @@ class FoscApp < CommandLine::Application
         option :version #, :names => %w(--version -v)
         option :help
         option :names => %w(--tables -t), :arity => 1,
-               :opt_found => lambda {|t| @fosc_options[:limit_tables] = t.split(',')}
+               :opt_found => lambda {|o,s,v| @fosc_options[:limit_tables] = v.join(',').split(',')}
         option :names => %w(--structure-only -s), :arity => 0,
                :opt_found => lambda {@fosc_options[:output] = 'structure'}
         option :names => %w(--integrity-only -i), :arity => 0,
                :opt_found => lambda {@fosc_options[:output] = 'integrity'}
         option :names => %w(--aplic-name --app-name -a), :arity => 1,
-               :opt_found => lambda {|a| @fosc_options[:aplic] = a}
+               :opt_found => lambda {|o,s,v| @fosc_options[:aplic] = v}
 
         expected_args [1,3]
     end
@@ -47,14 +47,12 @@ class FoscApp < CommandLine::Application
 
         begin
             fc.convert_file(fich)
-        rescue Fosc::Elements::Exception => e
-            $stderr.puts "Could not load 'elements/#{elementType}' for element #{elementName}: #{e}"
-        end
 
-        begin
             require "plugins/#{driverType}"
             driverClass = filename_to_class(driverType)
             driver = Fosc::Plugins.const_get(driverClass).new(@fosc_options)
+        rescue Fosc::Elements::Exception => e
+            $stderr.puts "Could not load element #{e.plugin_name}: #{e}"
         rescue LoadError, NameError => e
             $stderr.puts "Can't load driver '#{driverType}'"
             raise e
