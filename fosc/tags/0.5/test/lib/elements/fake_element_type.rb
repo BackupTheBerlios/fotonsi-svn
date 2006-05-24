@@ -1,2 +1,0 @@
-module Fosc::Elements
-end

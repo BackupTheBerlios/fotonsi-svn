@@ -1,3 +1,0 @@
-table
------
-some_col varchar(5) only_values('a','b','c')
