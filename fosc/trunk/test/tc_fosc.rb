@@ -9,6 +9,7 @@ class TC_Fosc <Test::Unit::TestCase
     def setup
         @conv = Fosc::FosConverter.new
     end
+
     def test_plugin_loader
         assert_raises(Fosc::Elements::NonExistentElementError) do
             db = @conv.convert_file('test/test-element-non-existent.fos')
@@ -17,6 +18,7 @@ class TC_Fosc <Test::Unit::TestCase
             db = @conv.convert_file('test/test-element-invalid.fos')
         end
     end
+
     def teardown
         @conv = nil
     end
