@@ -1,0 +1,3 @@
+Esto es una vista, llamada some_view, lo mismo que some_view.
+
+Su definición SQL es: FROM some_table WHERE a <> 'foo'.

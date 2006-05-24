@@ -1,0 +1,4 @@
+some_table
+----------
+id
+some_col varchar(5) unique
