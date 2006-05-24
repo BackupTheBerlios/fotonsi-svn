@@ -13,7 +13,8 @@ class FoscApp < CommandLine::Application
         short_description "FOS-DB Converter"
         long_description  "Foton Own Standard for DataBases format extensible converter"
         synopsis          "fosc file.fos [-t|--tables table1,table2,...] [-s|structure-only]\n"+
-                          "              [-i|--integrity-only] [--aplic-name|-a aplicname] [outputplugin] [par1 par2 ...] "
+                          "              [-i|--integrity-only] [--aplic-name|-a aplicname] [outputplugin]\n"+
+                          "              [par1 par2 ...]"
 
         @fosc_options = { :output => 'all' }
         # Compatibility hack
