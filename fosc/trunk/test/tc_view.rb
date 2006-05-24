@@ -18,7 +18,7 @@ EOD
       assert_equal(4, viewElement.fields.size,     "Number of view fields")
       assert_equal('some_view', viewElement.name,  "View name")
       assert_equal("FROM t1 LEFT JOIN t2 ON t1.c = t2.c",
-                        viewElement.sqlDefinition.strip,
+                        viewElement.sql_definition.strip,
                                                    "View SQL definition")
       # Check contents
       fields = [ { :name => 'a', :fieldAlias => nil, :table => 't1' },
@@ -54,7 +54,7 @@ t_nodes.node_zone_ref
 EOD
       assert_equal(8, viewElement.fields.size,     "Number of view fields")
       assert_equal('second_view', viewElement.name,"View name")
-      assert_equal(wherePart.strip, viewElement.sqlDefinition.strip,
+      assert_equal(wherePart.strip, viewElement.sql_definition.strip,
                                                    "View SQL definition")
       assert_equal('t_entities', viewElement.fields.first.table,
                                                    "First field table name")

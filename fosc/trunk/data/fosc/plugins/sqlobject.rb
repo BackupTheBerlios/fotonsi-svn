@@ -69,23 +69,23 @@ from Foton.SQLObject import DefaultValue, FotonSQLObject
 here2
 
             bd.tables.each do |t|
-               primaryKey = t.fields.find { |f| is_primary(f) }
-               primaryKey or raise FosPluginError, "No defined primary key for '#{t.name}'"
+               primary_key = t.fields.find { |f| is_primary(f) }
+               primary_key or raise FosPluginError, "No defined primary key for '#{t.name}'"
 
                puts "class #{t.name}(FotonSQLObject):"
                puts "    _table = '#{t.name}'"
-               puts "    _idName = '#{primaryKey.name}'"
-               puts "    _idType = str" if not ["id", "integer"].include?(primaryKey.type)
-               puts "    _idSequence = '#{primaryKey.attribute_value('values_from')}'" if primaryKey.attributes.include? 'values_from'
+               puts "    _idName = '#{primary_key.name}'"
+               puts "    _idType = str" if not ["id", "integer"].include?(primary_key.type)
+               puts "    _idSequence = '#{primary_key.attribute_value('values_from')}'" if primary_key.attributes.include? 'values_from'
                puts
 
-               primaryKey = true
+               primary_key = true
 
                t.fields.each do |f|
                   type = f.type
-                  if primaryKey and is_primary(f)
-                     # Only get the first primaryKey
-                     primaryKey = false
+                  if primary_key and is_primary(f)
+                     # Only get the first primary_key
+                     primary_key = false
                      next
                   end
 
