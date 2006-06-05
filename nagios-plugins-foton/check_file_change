@@ -37,10 +37,11 @@ verbose=0 #default
 
 # Modo de uso
 print_usage() {
+        echo ""
         echo "Usage: $PROGNAME  -f fichero -t tiempo "
         echo ""
         echo "       Fichero Ruta completa del fichero que se va a revisar."
-        echo "       Tiempo en el cual ha de cambiar de contenido el fichero."
+        echo "       Tiempo maximo en el cual se cambiara el contenido el fichero."
         echo ""
         echo "Usage: $PROGNAME [-h|--help]"
         echo "Usage: $PROGNAME [-V|--version]"
@@ -51,9 +52,18 @@ print_usage() {
 print_help() {
         echo ""
         echo "$PROGNAME: Version $REVISION"
+        echo ""
         echo "Plugin para chequear si un fichero ha cambiado su contenido en un tiempo dado."
+        echo ""
+        echo "Atención: No se puede revisar en un mismo nagios dos ficheros con identico nombre, ya que el subdirectorio temporal se pisarian."
         print_usage
 }
+
+if [ $# -lt 1 ]; then
+    print_help
+    exit $STATE_UNKNOWN
+fi
+
 
 
 while test -n "$1"; do
