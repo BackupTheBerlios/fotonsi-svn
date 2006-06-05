@@ -88,13 +88,17 @@ do
                                 ALERTA=$STATE_WARNING
                         fi
                         DESC="warning $CLIENTE, `echo $DESC`"
+		else
+			# En caso de estar todo correcto (se hizo la copia y no hay errores de rsync), almacenamos
+			# el nombre del cliente para devolver una lista de las copias hechas
+			DESC="copiado $CLIENTE, `echo $DESC`"
                 fi
         else
                 # Si no se encontró la fecha (grep devuelve un valor distinto de 0), es que no se hizo la copia	
                 if [ $ESTADO_HIST -ne 0  ]; then
                         DESC="error $CLIENTE, `echo $DESC`"
                         ALERTA=$STATE_ERROR
-                fi
+		fi
         fi
 
 done
