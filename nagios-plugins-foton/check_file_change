@@ -1,0 +1,156 @@
+#!/bin/bash 
+
+# ? Comprueba que exite FICHER_VIEJO
+# - Si No exite:
+#    Copia el FICHERO -> FICHERO_VIEJO
+#    Crea en $PATH_TMP$FICHERO.time
+#
+# ? Hace un diff binario FICHERO y FICHERO_VIEJO
+# - Si son iguales
+#    ? Mirar ha superado el tiempo de cambio SEGUNDOS_VIGENCIA, para ello se miraria el $PATH_TMP$FICHERO.time
+#       - Si lo ha superdo, Dar mensaje de error
+#
+# - No son Distinton
+#   Actualiza en $PATH_TMP$FICHERO.time con el nuevo horario
+# Motrar resultado
+
+
+#Donde se guardan los ficheros temporales:
+PATH_TMP=/tmp/check_file_change
+
+#Variables del nagios
+MSGRET=""
+DESC="Revisando si el fichero ha cambiado..."
+
+# Ruta al proceso en ejecución
+PROGNAME=`/usr/bin/basename $0`
+PROGPATH=`echo $0 | /bin/sed -e 's,[\\/][^\\/][^\\/]*$,,'`
+
+# Revisión del programa en ejecución
+REVISION=`echo '$Revision: 1 $' | /bin/sed -e 's/[^0-9.]//g'`
+
+#Cargamos las variables de entorno para el nagios
+. $PROGPATH/utils.sh
+
+
+verbose=0 #default
+
+# Modo de uso
+print_usage() {
+        echo "Usage: $PROGNAME  -f fichero -t tiempo "
+        echo ""
+        echo "       Fichero Ruta completa del fichero que se va a revisar."
+        echo "       Tiempo en el cual ha de cambiar de contenido el fichero."
+        echo ""
+        echo "Usage: $PROGNAME [-h|--help]"
+        echo "Usage: $PROGNAME [-V|--version]"
+        echo ""
+}
+
+# Ayuda
+print_help() {
+        echo ""
+        echo "$PROGNAME: Version $REVISION"
+        echo "Plugin para chequear si un fichero ha cambiado su contenido en un tiempo dado."
+        print_usage
+}
+
+
+while test -n "$1"; do
+    case "$1" in
+        --help)
+            print_help
+            exit $STATE_UNKNOWN
+            ;;
+        -h)
+            print_help
+            exit $STATE_UNKNOWN
+            ;;
+        --version)
+            print_help
+            exit $STATE_UNKNOWN
+            ;;
+        -V)
+            print_help
+            exit $STATE_UNKNOWN
+            ;;
+        --verbose)
+            verbose=1
+            ;;
+        -v)
+            verbose=1
+            ;;
+        -f)
+            FICHERO="$2"
+            FICHERO_NOMBRE=`basename $FICHERO`
+            shift
+            ;;
+	-t)
+	   SEGUNDOS_VIGENCIA="$2"
+	   shift
+            ;;
+        *)
+            echo "Unknown argument: $1"
+            print_help
+            exit $STATE_UNKNOWN
+            ;;
+    esac
+    shift
+done
+
+#Creamos el subdirectorio temporal si no existe
+if [ ! -f "$PATH_TMP/test" ]; then
+    mkdir $PATH_TMP
+    touch $PATH_TMP/test
+fi
+
+#Exite el fichero a comprar
+
+if [ ! -f $FICHERO ]; then
+    echo "Erro:No exite el fichero $1"
+    print_help
+    exit $STATE_CRITICAL
+fi
+
+#Miramos si existe el fichero viejo
+if [ ! -f $PATH_TMP/$FICHERO_NOMBRE ]; then
+   #Como no existia lo copio y apunto la hora
+   cp $FICHERO $PATH_TMP/$FICHERO_NOMBRE
+   echo "`date +"%s"`" >$PATH_TMP/$FICHERO_NOMBRE.time
+fi
+
+#Comparamos historicos
+diff $FICHERO $PATH_TMP/$FICHERO_NOMBRE >/dev/null
+ESTADO_HIST=$?
+
+if [ $ESTADO_HIST -eq 0 ]; then 
+   #Son iguales mirar si estamos en tiempo
+   ULTIMO=`cat $PATH_TMP/$FICHERO_NOMBRE.time`
+   AHORA=`date +"%s"`
+   RESULTADO=`expr $AHORA - $ULTIMO`
+   if [ $RESULTADO -gt $SEGUNDOS_VIGENCIA ]; then
+     #Se ha superado el tiempo de vigencia del cambio error
+     DESC="Error $RESULTADO segundos sin actualizar"
+     ALERTA=$STATE_ERROR
+
+   else
+     DESC="Lleva $RESULTADO segundos sin actualizar, pero dentro de tiempo."
+     ALERTA=$STATE_OK  
+
+   fi
+
+else
+
+   # Son distintos atualizamos el historico con los nuevos datos
+   cp $FICHERO $PATH_TMP/$FICHERO_NOMBRE
+   echo "`date +"%s"`" >$PATH_TMP/$FICHERO_NOMBRE.time
+   DESC="Se esta actualizando correctamente ultima revision `date`"
+   ALERTA=$STATE_OK
+
+fi
+
+echo $DESC
+exit $ALERTA
+
+
+
