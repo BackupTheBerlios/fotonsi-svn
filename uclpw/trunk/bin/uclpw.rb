@@ -17,14 +17,6 @@ class App < CommandLine::Application
         expected_args :project_name
     end
 
-    def gets
-        old_argv = ARGV.dup
-        ARGV.replace []
-        r = Kernel.gets
-        ARGV.replace old_argv
-        r
-    end
-
     def main
         # Second, optional argument
         @skeleton = @args.size > 1 ? @args[1] : 'default'
@@ -44,9 +36,6 @@ class App < CommandLine::Application
             exit 1
         end
 
-        # Change directory to the new skeleton copy
-        Dir.chdir processor.project_name
-
         # Load variables from the 'vars' file
         var_list = processor.get_vars
 
@@ -62,13 +51,13 @@ class App < CommandLine::Application
         while true
            var_list.each do |k|
               print k[1] ? "#{k[0]} [#{k[1]}]\t= " : "#{k[0]}\t= "
-              input = gets.strip
-              k[1] = input if input != ''
+              input = STDIN.gets.strip
+              processor.vars[k[0]] = input if input != ''
            end
            puts
            var_list.each {|k| puts "#{k[0]} = #{k[1]}"}
            print "Is everything OK? [Y/n] "
-           break unless gets.strip =~ /^n/i
+           break unless STDIN.gets.strip =~ /^n/i
         end
         # ...and actually save them
         processor.update_vars_file
@@ -95,7 +84,7 @@ class App < CommandLine::Application
 
         # Clean up temp files
         print "Clean up temp files (*~)? [Y/n] "
-        unless gets.strip =~ /^n/i
+        unless STDIN.gets.strip =~ /^n/i
            processor.cleanup_dir
            FileTest.exists?('extra.rb') && File.safe_unlink('extra.rb')
         end
