@@ -25,6 +25,12 @@ module UCLPW
             @ignore_list = DEFAULT_IGNORE_LIST
             self.skeleton_dirs = skeleton_dirs
             get_skeleton(@skeleton)
+
+            # Load the skeleton 'extra' module
+            begin
+               require File.join(output_dir, 'extra')
+            rescue LoadError
+            end
         end
 
         def project_name
@@ -54,26 +60,10 @@ module UCLPW
         end
 
         # Find every file recursively and substitute %{var_name}-style macros
-        def process_dir(dir=output_dir)
-            Dir.foreach(dir) do |f|
-                next if f =~ /^\.\.?$/
-                next if @ignore_list.find { |pat| File.fnmatch(pat, f) }
-
-                f = File.join(dir, f)
-                if FileTest.directory? f
-                    process_dir(f)
-                else
-                    f_temp = f + "~"
-                    File.move(f, f_temp)
-                    File.open(f, "w") do |out_f|
-                        File.foreach(f_temp) do |l|
-                            out_f.puts l.gsub(/%\{([a-zA-Z0-9_]+)\}/) {|s|
-                                vars.key?($1) ? vars[$1] : s
-                            }
-                        end
-                    end
-                end
-            end
+        def process_dir
+            execute_hook :pre_process
+            process_dir_rec(output_dir)
+            execute_hook :post_process
         end
 
         def update_vars_file(file = nil)
@@ -89,16 +79,9 @@ module UCLPW
             File.move(tmp_file, file)
         end
 
-        def cleanup_dir(dir = output_dir)
-            Dir.foreach(dir) do |f|
-                next if f =~ /^\.\.?$/
-                f = File.join(dir, f)
-                if FileTest.directory? f
-                    cleanup_dir(f)
-                elsif f =~ /~$/      # Temp file
-                    File.safe_unlink(f)
-                end
-            end
+        def cleanup_dir
+            cleanup_dir_rec(output_dir)
+            File.safe_unlink(File.join(output_dir, 'extra.rb'))
         end
 
 
@@ -119,6 +102,49 @@ module UCLPW
                 end
             end
             raise UnknownSkeletonError, "Couldn't find skeleton '#{name}'"
+        end
+
+        def execute_hook(which)
+            if respond_to? which
+                old_dir = Dir.pwd
+                Dir.chdir output_dir
+                send(which)
+                Dir.chdir old_dir
+            end
+        end
+
+        def process_dir_rec(dir)
+            Dir.foreach(dir) do |f|
+                next if f =~ /^\.\.?$/
+                next if @ignore_list.find { |pat| File.fnmatch(pat, f) }
+
+                f = File.join(dir, f)
+                if FileTest.directory? f
+                    process_dir_rec(f)
+                else
+                    f_temp = f + "~"
+                    File.move(f, f_temp)
+                    File.open(f, "w") do |out_f|
+                        File.foreach(f_temp) do |l|
+                            out_f.puts l.gsub(/%\{([a-zA-Z0-9_]+)\}/) {|s|
+                                vars.key?($1) ? vars[$1] : s
+                            }
+                        end
+                    end
+                end
+            end
+        end
+
+        def cleanup_dir_rec(dir)
+            Dir.foreach(dir) do |f|
+                next if f =~ /^\.\.?$/
+                f = File.join(dir, f)
+                if FileTest.directory? f
+                    cleanup_dir_rec(f)
+                elsif f =~ /~$/      # Temp file
+                    File.safe_unlink(f)
+                end
+            end
         end
     end
 end

@@ -14,12 +14,13 @@ class App < CommandLine::Application
 
         option :help
         option :debug
-        expected_args :project_name
+        expected_args [1,2]
     end
 
     def main
+        @project_name = @args[0]
         # Second, optional argument
-        @skeleton = @args.size > 1 ? @args[1] : 'default'
+        @skeleton     = @args.size > 1 ? @args[1] : 'default'
 
         begin
             processor = UCLPW::SkeletonProcessor.new(@project_name,
@@ -36,23 +37,16 @@ class App < CommandLine::Application
             exit 1
         end
 
-        # Load variables from the 'vars' file
-        var_list = processor.get_vars
-
-        # Load the skeleton 'extra' module
-        begin
-           # We're already in the skeleton copy directory
-           require 'extra'
-        rescue LoadError
-           $stderr.puts "No extra actions to execute"
-        end
-
         # Find out variable values ...
+        var_list = processor.get_vars
         while true
            var_list.each do |k|
               print k[1] ? "#{k[0]} [#{k[1]}]\t= " : "#{k[0]}\t= "
               input = STDIN.gets.strip
-              processor.vars[k[0]] = input if input != ''
+              if input != ''
+                  k[1] = input
+                  processor.vars[k[0]] = input
+              end
            end
            puts
            var_list.each {|k| puts "#{k[0]} = #{k[1]}"}
@@ -62,25 +56,11 @@ class App < CommandLine::Application
         # ...and actually save them
         processor.update_vars_file
 
-        # Pre-processing hook
-        begin
-           processor.pre_process
-        rescue NameError => e
-           raise unless e.name == :pre_process
-        end
-
         # Process every file (find and substitute every %{var_name}-style
         # macro)
         print "Processing skeleton... "
         processor.process_dir
         puts "done."
-
-        # Post-processing hook
-        begin
-           processor.post_process
-        rescue NameError => e
-           raise unless e.name == :post_process
-        end
 
         # Clean up temp files
         print "Clean up temp files (*~)? [Y/n] "
