@@ -1,9 +1,12 @@
 PACKAGE=uclpw
-VERSION=$(shell ruby -Ibin -ruclpw -e "print UCLPW::VERSION")
+VERSION=$(shell ruby -Ilib -ruclpw -e "print UCLPW::VERSION")
 TMPDIR=tmp.dist
 DISTNAME=$(PACKAGE)-$(VERSION)
 
 all: doc
+
+test:
+	RUBYLIB=lib:test ruby test/uclpw.rb
 
 doc:
 	rdoc README INSTALL bin/
@@ -26,4 +29,4 @@ dist: clean MANIFEST
 	tar cfz $(DISTNAME).tar.gz -C $(TMPDIR) $(DISTNAME)
 	rm -rf $(TMPDIR)
 
-.PHONY: all doc
+.PHONY: all test doc clean dist

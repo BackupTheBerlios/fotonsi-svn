@@ -21,7 +21,7 @@ class SkeletonProcessor
             if File.basename(f).include?('_application_')
                 File.move(f, 
                         File.dirname(f) + '/' + 
-                        File.basename(f).sub('_application_', projectName))
+                        File.basename(f).sub('_application_', project_name))
             end
         }
     end
