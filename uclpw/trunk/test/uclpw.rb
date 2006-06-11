@@ -40,12 +40,12 @@ module TestUCLPW
       num_backup_files = 0
       processor = UCLPW::SkeletonProcessor.new('test/test_proj', 'test_skel',
                                                'test/skeletons')
-      processor.process_dir('test/test_proj')
+      processor.process_dir
       Find.find('test/test_proj') do |f|
         num_backup_files += 1 if f =~ /~$/
       end
       assert(num_backup_files > 0)
-      processor.cleanup_dir('test/test_proj')
+      processor.cleanup_dir
       num_backup_files = 0
       Find.find('test/test_proj') do |f|
         num_backup_files += 1 if f =~ /~$/
@@ -79,8 +79,8 @@ module TestUCLPW
                                                'test/skeletons')
       processor.vars['some_var'] = 'some var value'
       processor.vars['some_other_var'] = 'some other value'
-      processor.process_dir('test/test_proj')
-      processor.cleanup_dir('test/test_proj')
+      processor.process_dir
+      processor.cleanup_dir
       assert_dirs_equal('test/expected/first_test_proj', 'test/test_proj')
     end
 
