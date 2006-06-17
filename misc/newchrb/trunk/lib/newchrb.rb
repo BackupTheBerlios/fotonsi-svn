@@ -2,7 +2,7 @@ require 'highline/import'
 
 # Standard definitions for +newchrb+
 module NewChrb
-    VERSION = 0.1
+    VERSION = 0.11
 
     # Asks the user for the values for the new chrb properties, and returns a
     # hash with those values
