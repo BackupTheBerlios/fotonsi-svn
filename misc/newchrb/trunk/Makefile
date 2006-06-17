@@ -11,10 +11,7 @@ test:
 clean:
 	ruby -w setup.rb clean
 
-MANIFEST: clean
-	find | egrep -v /.svn >MANIFEST
-
-dist: MANIFEST
+dist:
 	VERSION=`ruby -Ilib -rnewchrb -e "print NewChrb::VERSION"`; \
 	TMPDIR=tmp.$$$$; \
 	DIR=$$TMPDIR/$(DIST_BASE_NAME)-$$VERSION; \
