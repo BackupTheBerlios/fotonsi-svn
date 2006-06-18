@@ -12,7 +12,10 @@ module ChrbTypes
         end
     end
     class ChrbNotFoundError < Exception; end
-    class BadChrbError < Exception; end
+    class BadChrbTemplateError < Exception; end
+    class UnpackError < Exception; end
+
+    CHRB_BASE_DIRECTORY = 'root'
 
     class Property
         VALID_TYPES = [:string, :number, :boolean]
@@ -35,10 +38,10 @@ module ChrbTypes
                     if VALID_TYPES.include? value
                         @type = value
                     else
-                        raise BadChrbError, "Unknown property type '#{value}'"
+                        raise BadChrbTemplateError, "Unknown property type '#{value}'"
                     end
                 else
-                    raise BadChrbError, "Unknown property argument: #{opt}"
+                    raise BadChrbTemplateError, "Unknown property argument: #{opt}"
                 end
             end
         end
@@ -46,7 +49,7 @@ module ChrbTypes
 
     class Base
         class <<self
-            attr_writer :chrb_repo_dir
+            attr_writer :chrb_repo_dir, :fakeroot_path
 
             # Declares a new property for the chrb
             def property(name, opts)
@@ -81,6 +84,15 @@ module ChrbTypes
                 end
             end
 
+            # Returns the +fakeroot+ binary path
+            def fakeroot_path
+                if defined? @fakeroot_path
+                    @fakeroot_path
+                else
+                    superclass.respond_to?(:fakeroot_path) ? superclass.fakeroot_path : '.'
+                end
+            end
+
             def get_chrb_binding(props)
                 for pair in props
                     prop, value = *pair
@@ -106,8 +118,7 @@ module ChrbTypes
                 end
 
                 # Unpack the chrb template to the target dir
-                create_chrb_from(File.join(chrb_repo_dir, base_filename),
-                                 dest_dir)
+                create_chrb_from(base_filename, dest_dir)
 
                 # Process the ERB templates, if any
                 require 'erb'
@@ -123,10 +134,13 @@ module ChrbTypes
                         # Delete the source file, only leave there the result
                         File.unlink template
                     else
-                        raise BadChrbError, "Non-existent ERB template '#{template}'"
+                        raise BadChrbTemplateError, "Non-existent ERB template '#{template}'"
                     end
                 end
             end
+
+            # Returns the path to the chrb template
+            def chrb_template; chrb_template_and_method[0]; end
 
 
             protected
@@ -134,22 +148,37 @@ module ChrbTypes
             METHODS_EXTENSIONS = {:unpack_bz2 => ['.tar.bz2', '.tbz', '.tbz2'],
                                   :unpack_gz  => ['.tar.gz', '.tgz']}
 
-            # Creates a new chroot in the destination directory +dest_dir+.
-            # Returns the final filename if everything was right, raises an
-            # +ChrbNotFoundError+ exception if the chrb couldn't be found, or a
-            # +BadChrbError+ exception if it couldn't be unpacked
-            def create_chrb_from(base_filename, dest_dir)
+            # Returns an array with two values (the chrb template path and the
+            # method used to uncompress it), or raises a +ChrbNotFoundError+
+            # exception if the chrb couldn't be found
+            def chrb_template_and_method
                 METHODS_EXTENSIONS.each_pair do |method, ext_list|
                     ext_list.each do |ext|
                         filename = "#{base_filename}#{ext}"
+                        filename_in_repo = File.join(chrb_repo_dir, filename)
                         if File.exists? filename
-                            send(method, filename, dest_dir)
-                            return filename
+                            return [filename, method]
+                        elsif File.exists? filename_in_repo
+                            return [filename_in_repo, method]
                         end
                     end
                 end
 
                 raise ChrbNotFoundError, "Can't find chrb template in '#{base_filename}'. Tried extensions: #{METHODS_EXTENSIONS.values.flatten.join(", ")}"
+            end
+
+            # Creates a new chroot in the destination directory +dest_dir+.
+            # Returns the final filename if everything was right, or raises a
+            # +UnpackError+ or +BadChrbTemplateError+ exception if it couldn't
+            # be unpacked
+            def create_chrb_from(base_filename, dest_dir)
+                path, method = chrb_template_and_method
+                dest_dir_dirname = File.dirname(dest_dir)
+                temp_unpack_dir = File.join(dest_dir_dirname, CHRB_BASE_DIRECTORY)
+                if File.exists? temp_unpack_dir
+                    raise UnpackError, "Can't unpack, '#{temp_unpack_dir}' directory already exists"
+                end
+                send(method, path, dest_dir)
             end
 
             def unpack_bz2(filename, dest_dir)
@@ -170,16 +199,39 @@ module ChrbTypes
                               'z'
                           when :bz2
                               'j'
+                          else
+                              raise Exception, "Unknown uncompress option #{format}"
                           end
-                cmd = "tar xf#{options} #{absolute_path} -C #{dirname}"
+                fakeroot_options = ""
+                # If not root, try to use fakeroot
+                if Process.uid != 0
+                    if File.exists? fakeroot_path
+                        fakeroot_options = fakeroot_path
+                    else
+                        raise UnpackError, "Not executing as root, and couldn't find fakeroot in '#{fakeroot_path}'"
+                    end
+                end
+                cmd = "#{fakeroot_options} tar xf#{options} #{absolute_path} -C #{dirname}"
                 output = `#{cmd} 2>&1`
                 if $?.exitstatus != 0
-                    raise BadChrbError, "tar exited with an error: #{cmd}: #{output}"
+                    FileUtils.rm_rf(File.join(dirname, CHRB_BASE_DIRECTORY))
+                    raise UnpackError, "tar exited with an error: #{cmd}: #{output}"
                 end
                 # Move it to its final destination
-                FileUtils.mv(File.join(dirname, 'root'), File.join(dirname, basename))
+                begin
+                    FileUtils.mv(File.join(dirname, CHRB_BASE_DIRECTORY),
+                                 File.join(dirname, basename))
+                rescue Errno::ENOENT
+                    if File.exists? File.join(dirname, CHRB_BASE_DIRECTORY)
+                        raise BadChrbTemplateError, "Chrb template '#{filename}' doesn't seem to contain '#{CHRB_BASE_DIRECTORY}' directory"
+                    else
+                        raise
+                    end
+                end
             end
         end
+
+
 
         # Base properties
         property        :chrb_name, :description => 'Hostname for the new chrb?'

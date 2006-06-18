@@ -17,7 +17,7 @@ class NewChrbApp < CommandLine::Application
         copyright         "2006 Fotón Sistemas Inteligentes"
         short_description "Chrb creator"
         long_description  "Creates a new chrb from a template"
-        synopsis          "newchrb chrb_type [destination_dir]"
+        synopsis          "[-r /chrb/repo] chrb_type [destination_dir]"
 
         option :help
         option :names => %w(--chrb-repo -r), :arity => 1,
@@ -33,10 +33,13 @@ class NewChrbApp < CommandLine::Application
         @conf = Rucola::Conf.new('newchrb')
         @repo_dir = nil unless defined? @repo_dir
         ChrbTypes::Base.chrb_repo_dir = @repo_dir || @conf[:repo_dir] || '.'
+        ChrbTypes::Base.fakeroot_path = @conf[:fakeroot_path] || '/usr/bin/fakeroot'
 
         begin
             type_plugin = Foton::PluginUtils.load_plugin(filename_to_class(chrb_type), ChrbTypes)
-        rescue Foton::PluginUtils::Exception => e
+            # Ignore result; just to check it doesn't throw an exception
+            type_plugin.chrb_template
+        rescue Foton::PluginUtils::Exception, ChrbTypes::Exception => e
             $stderr.puts "Can't load plugin '#{chrb_type}' (details follow):\n#{e}"
             exit(1)
         end
@@ -51,10 +54,16 @@ class NewChrbApp < CommandLine::Application
             exit(1)
         end
 
-        say("Unpacking #{ChrbTypes::Base.chrb_repo_dir}/#{chrb_type}")
-        type_plugin.create(chrb_dir, attrs)
-        say("Done.")
-    rescue Interrupt => e
+        say("Unpacking #{ChrbTypes::Base.chrb_repo_dir}/#{chrb_type}...")
+        begin
+            type_plugin.create(chrb_dir, attrs)
+        rescue ChrbTypes::Exception => e
+            say(e)
+            say("Aborting.")
+        else
+            say("Done.")
+        end
+    rescue Interrupt
         exit(1)
     rescue => e
         puts e
