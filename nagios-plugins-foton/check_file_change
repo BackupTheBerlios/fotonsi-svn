@@ -146,7 +146,7 @@ if [ $ESTADO_HIST -eq 0 ]; then
    if [ $RESULTADO -gt $SEGUNDOS_VIGENCIA ]; then
      #Se ha superado el tiempo de vigencia del cambio error
      DESC="Error $RESULTADO segundos sin actualizar"
-     ALERTA=$STATE_ERROR
+     ALERTA=$STATE_CRITICAL
 
    else
      DESC="Lleva $RESULTADO segundos sin actualizar, pero dentro de tiempo."
