@@ -2,7 +2,7 @@
 
 $types = { "id"       => "serial",
            "memo"     => ":string",
-           "currency" => ":float",
+           "currency" => ":decimal",
            "datetime" => ":datetime",
            "binary"   => ":integer",
            "float"    => ":float",
@@ -35,7 +35,7 @@ module Fosc
                             is_primary = false
                         end
                         if c.reference
-                            foreign_keys << "execute 'ALTER TABLE #{t.name} ADD FOREIGN KEY (#{c.name}) REFERENCES #{c.reference[0]} (#{c.reference[1]})'"
+                            foreign_keys << "      execute 'ALTER TABLE #{t.name} ADD FOREIGN KEY (#{c.name}) REFERENCES #{c.reference[0]} (#{c.reference[1]})'"
                         end
 
                         # Collect interesting field attributes
@@ -62,14 +62,14 @@ module Fosc
 
                         # Add complete line to the field definitions
                         if c.name != "id"
-                            list << "  table.column :#{c.name}, #{$types[type] || type}#{c.params ? ', :limit => '+c.params+'' : ''}#{extra}"
+                            list << "      t.column :#{c.name}, #{$types[type] || type}#{c.params ? ', :limit => '+c.params+'' : ''}#{extra}"
                         end
                     end
                     # Collect multiple foreign keys
                     t.attributes.each do |a|
                         next unless a.name == 'multifk'
                         nombre_tabla = a.props.keys.reject {|p| p == 'src' || p == 'dst' }[0]
-                        foreign_keys << "execute 'ALTER TABLE #{t.name} ADD FOREIGN KEY (#{a.props['src']}) REFERENCES #{nombre_tabla} (#{a.props['dst']})'"
+                        foreign_keys << "      execute 'ALTER TABLE #{t.name} ADD FOREIGN KEY (#{a.props['src']}) REFERENCES #{nombre_tabla} (#{a.props['dst']})'"
                     end
                     # extra_lines << "  PRIMARY KEY(#{primary_keys.join(', ')})" unless primary_keys.empty?
 
@@ -77,9 +77,16 @@ module Fosc
                     structure << '' 
                     new_sequences.each { |s| structure << "CREATE SEQUENCE #{s};"}
                     # And now, the actual table
-                    structure << "create_table :#{t.name} do |table|"
+                    structure << "class Create%s < ActiveRecord::Migration" % t.name.capitalize.gsub(/_([a-z])/) {|s| $1.upcase }
+                    structure << "  def self.up"
+                    structure << "    create_table :#{t.name} do |t|"
                     structure << (list + extra_lines).join("\n")
-                    structure << "end\n"
+                    structure << "    end"
+                    structure << "  end\n"
+                    structure << "  def self.down"
+                    structure << "    drop_table :#{t.name}"
+                    structure << "  end"
+                    structure << "end"
                     # And then, indexes
                     t.attributes.each do |a|
                         next unless a.name == 'index'
