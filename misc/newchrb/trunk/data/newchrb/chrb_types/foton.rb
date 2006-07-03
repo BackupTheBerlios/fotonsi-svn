@@ -6,6 +6,8 @@ module ChrbTypes
         property      :ip,       :description => "IP address (only for Foton's intranet)?"
         erb_templates '/etc/hostname',
                       '/etc/mailname',
-                      '/etc/hosts'
+                      '/etc/hosts',
+                      '/etc/resolv.conf',
+                      '/etc/ssmtp/ssmtp.conf'
     end
 end
