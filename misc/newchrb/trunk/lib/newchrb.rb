@@ -15,7 +15,7 @@ module NewChrb
                 prop_list.each do |prop|
                     case prop.type
                     when :integer
-                        value = ask(prop.description + " ", lambda {|r| r.to_i}) {|q| q.default = prop.default}
+                        value = ask(prop.description + " ", lambda {|r| r.to_i}) {|q| q.default = values[prop.name]}
                     when :boolean
                         choose do |menu|
                             menu.layout  = :one_line
@@ -25,7 +25,9 @@ module NewChrb
                             menu.choice 'n' do value = false end
                         end
                     else
-                        value = ask(prop.description + " ") {|q| q.default = prop.default}
+                        value = ask(prop.description + " ") do |q|
+                            q.default    = values[prop.name]
+                        end
                     end
                     values[prop.name] = value
                 end
@@ -34,7 +36,7 @@ module NewChrb
                 say("<%= color('New chrb properties', BOLD) %>")
                 say("-------------------")
                 values.each_pair do |key, val|
-                    say("#{key} = #{val}")
+                    say("#{key} = #{val}\n")
                 end
 
                 choose do |menu|
