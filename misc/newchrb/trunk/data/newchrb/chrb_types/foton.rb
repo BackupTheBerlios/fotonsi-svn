@@ -8,6 +8,8 @@ module ChrbTypes
                       '/etc/mailname',
                       '/etc/hosts',
                       '/etc/resolv.conf',
-                      '/etc/ssmtp/ssmtp.conf'
+                      '/etc/ssmtp/ssmtp.conf',
+                      '/etc/chrb/ip',
+                      '/etc/default/ssh'
     end
 end
