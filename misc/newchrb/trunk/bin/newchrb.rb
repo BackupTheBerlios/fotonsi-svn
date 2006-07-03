@@ -1,5 +1,6 @@
 #!/usr/bin/ruby -w
 
+require 'fileutils'
 require 'commandline'
 require 'highline'
 require 'rucola'
@@ -35,6 +36,11 @@ class NewChrbApp < CommandLine::Application
         ChrbTypes::Base.chrb_repo_dir = @repo_dir || @conf[:repo_dir] || '.'
         ChrbTypes::Base.fakeroot_path = @conf[:fakeroot_path] || '/usr/bin/fakeroot'
 
+        unless File.directory? destination_dir and File.writable? destination_dir
+            $stderr.puts "Directory #{destination_dir} is not a directory or isn't writable"
+            exit(1)
+        end
+
         begin
             type_plugin = Foton::PluginUtils.load_plugin(filename_to_class(chrb_type), ChrbTypes)
             # Ignore result; just to check it doesn't throw an exception
@@ -50,18 +56,35 @@ class NewChrbApp < CommandLine::Application
         chrb_dir = File.join(destination_dir, attrs[:chrb_name])
 
         if File.exists? chrb_dir
-            $stderr.puts "Directory #{chrb_dir} already exists. Exiting."
-            exit(1)
+            say("<%= color('Directory #{chrb_dir} already exists.', BOLD) %>")
+            say("<%= color(\"You'll have to WIPE that directory out if\", BOLD) %>")
+            say("<%= color('you want to create a new chrb with that name.', BOLD) %>")
+            if choose do |menu|
+                   menu.layout  = :one_line
+                   menu.prompt  = "WIPE directory? [n] "
+                   menu.default = 'n'
+                   menu.choice 'y' do value = true  end
+                   menu.choice 'n' do value = false end
+               end
+                say("Wiping #{chrb_dir}... ")
+                FileUtils.rm_rf chrb_dir
+                say("done.")
+            else
+                $stderr.puts "Exiting."
+                exit(1)
+            end
         end
 
-        say("Unpacking #{ChrbTypes::Base.chrb_repo_dir}/#{chrb_type}...")
+        say("Unpacking #{type_plugin.chrb_template} in '#{destination_dir}'... ")
         begin
             type_plugin.create(chrb_dir, attrs)
         rescue ChrbTypes::Exception => e
+            say("\n")
             say(e)
-            say("Aborting.")
+            say("ABORTING.")
         else
-            say("Done.")
+            say("done.")
+            say("Your new chrb is now in #{chrb_dir}.")
         end
     rescue Interrupt
         exit(1)
