@@ -75,7 +75,7 @@ In this configuration file you can specify paths and init script parameters.
 Currently there are three configuration keys:
 
  [path]
- repo = /home/chroot
+ repo = /srv
  chroot_bin = /usr/sbin/chroot
 
  [init_scripts]
@@ -482,7 +482,8 @@ foreach my $chroot (@chroots) {
                         exit 1;
                     }
                 }
-                elsif ((stat($preload))[9] > (stat("$chroot/$preload"))[9]) {
+                elsif (-r $preload &&
+                       (stat($preload))[9] > (stat("$chroot/$preload"))[9]) {
                     print_warning("Upgrading $preload in $chroot\n");
                     copy $preload, "$chroot/$preload";
                 }
