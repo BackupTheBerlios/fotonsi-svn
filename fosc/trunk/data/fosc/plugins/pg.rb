@@ -71,6 +71,7 @@ module Fosc
                     structure << '' 
                     new_sequences.each { |s| structure << "CREATE SEQUENCE #{s};"}
                     # And now, the actual table
+                    structure << "DROP TABLE #{t.name};" if @options[:drop_table]
                     structure << "CREATE TABLE #{t.name} ("
                     structure << (list + extra_lines).join(",\n")
                     structure << ");\n"

@@ -12,7 +12,7 @@ class FoscApp < CommandLine::Application
         copyright         "2005-2006 Fotón Sistemas Inteligentes"
         short_description "FOS-DB Converter"
         long_description  "Foton Own Standard for DataBases format extensible converter"
-        synopsis          "fosc file.fos [-t|--tables table1,table2,...] [-s|structure-only]\n"+
+        synopsis          "fosc file.fos [-t|--tables table1,table2,...] [-s|structure-only] [-d|--add-drop-table]\n"+
                           "              [-i|--integrity-only] [--aplic-name|-a aplicname] [outputplugin]\n"+
                           "              [par1 par2 ...]"
 
@@ -36,6 +36,8 @@ class FoscApp < CommandLine::Application
                :opt_found => lambda {@fosc_options[:output] = 'integrity'}
         option :names => %w(--aplic-name --app-name -a), :arity => 1,
                :opt_found => lambda {|o,s,v| @fosc_options[:aplic] = v}
+        option :names => %w(--add-drop-table -d), :arity => 0,
+               :opt_found => lambda {|o,s,v| @fosc_options[:drop_table] = true}
 
         expected_args [1,3]
     end
@@ -55,7 +57,7 @@ class FoscApp < CommandLine::Application
         rescue Fosc::Elements::Exception => e
             $stderr.puts "Could not load element #{e.plugin_name}: #{e}"
         rescue LoadError, NameError => e
-            $stderr.puts "Can't load driver '#{driverType}'"
+            $stderr.puts "Can't load driver '#{driverType}': #{e}"
             raise e
         end
 
