@@ -2,15 +2,16 @@
 
 $types = { "id"       => "serial",
            "memo"     => ":string",
-           "currency" => ":decimal",
+           "currency" => "'numeric(10,2)'",
            "datetime" => ":datetime",
            "binary"   => ":integer",
-           "float"    => ":float",
+           "float"    => "'double precision'",
            "bool"     => ":boolean",
            "int"      => ":integer",
            "date"     => ":date",
            "varchar"     => ":string",
            "char"     => ":string",
+           "text"     => "'text'",
          }
 
 require 'plugins/base_plugin'
