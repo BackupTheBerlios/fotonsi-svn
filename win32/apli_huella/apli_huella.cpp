@@ -17,11 +17,13 @@ using namespace std;
 #include "NBioAPI.h"
 #include "NBioAPI_CheckValidity.h"
 
+typedef unsigned long (*fp_FotoNBioAPI_Init) (void);
 typedef NBioAPI_RETURN (*importFunction_LPCTSTR)(LPCTSTR a);
 
 int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
 	int nRetCode = 0;
+	unsigned long dll_handle;
 
 	// initialize MFC and print and error on failure
 	if (!AfxWinInit(::GetModuleHandle(NULL), NULL, ::GetCommandLine(), 0))
@@ -56,6 +58,15 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 			cout << "DLL OK\n";
 		else
 			cout << "ERROR\n";
+
+		// Get function pointer
+		fp_FotoNBioAPI_Init FotoNBioAPI_Init;
+		FotoNBioAPI_Init = (fp_FotoNBioAPI_Init) GetProcAddress(hinstLib, "FotoNBioAPI_Init");
+		if (FotoNBioAPI_Init == NULL) {
+				printf("ERROR: unable to find DLL function\n");
+				return 1;
+		}
+		dll_handle = (unsigned long) fp_FotoNBioAPI_Init();
 
 		cout << "Presione ENTER para finalizar...\n" << endl;
 

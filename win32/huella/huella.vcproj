@@ -35,7 +35,7 @@
 				AdditionalDependencies="&quot;C:\Program Files\NITGEN eNBSP\SDK\lib\NBioAPI_CheckValidity.lib&quot;"
 				OutputFile="$(OutDir)/huella.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;C:\Program Files\NITGEN eNBSP\SDK\lib\NBioAPI_CheckValidity.lib&quot;; &quot;C:\Program Files\NITGEN eNBSP\SDK\lib\NBioBSP.lib&quot;"
+				AdditionalLibraryDirectories="&quot;C:\Program Files\NITGEN eNBSP\SDK\lib\NBioAPI_CheckValidity.lib&quot;; &quot;C:\Program Files\NITGEN eNBSP\SDK\lib\&quot;"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/huella.pdb"
 				SubSystem="2"
@@ -131,6 +131,9 @@
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc">
+			<File
+				RelativePath="FotoNBioAPI.h">
+			</File>
 			<File
 				RelativePath="stdafx.h">
 			</File>

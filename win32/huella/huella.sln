@@ -1,7 +1,7 @@
 Microsoft Visual Studio Solution File, Format Version 7.00
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "huella", "huella.vcproj", "{04102EB2-0E4C-4BB6-9E7E-0FF4865682C2}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "apli_huella", "C:\Documents and Settings\alberto\My Documents\Visual Studio Projects\apli_huella\apli_huella.vcproj", "{3F30DF71-43E7-420C-9D43-248A8EC59D17}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "apli_huella", "..\apli_huella\apli_huella.vcproj", "{3F30DF71-43E7-420C-9D43-248A8EC59D17}"
 EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
@@ -20,6 +20,8 @@ Global
 		{3F30DF71-43E7-420C-9D43-248A8EC59D17}.Debug.Build.0 = Debug|Win32
 		{3F30DF71-43E7-420C-9D43-248A8EC59D17}.Release.ActiveCfg = Release|Win32
 		{3F30DF71-43E7-420C-9D43-248A8EC59D17}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionItems) = postSolution
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
