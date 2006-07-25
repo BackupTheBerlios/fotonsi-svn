@@ -17,8 +17,11 @@ using namespace std;
 #include "NBioAPI.h"
 #include "NBioAPI_CheckValidity.h"
 
-typedef unsigned long (*fp_FotoNBioAPI_Init) (void);
-typedef NBioAPI_RETURN (*importFunction_LPCTSTR)(LPCTSTR a);
+typedef unsigned long (*fp_FotoNBioAPI_Init) ();
+typedef NBioAPI_RETURN (*fp_FotoNBioAPI_CheckValidity)();
+typedef int (*fp_FotoNBioAPI_InitLog) ();
+typedef int (*fp_FotoNBioAPI_ShutdownLog) ();
+typedef const char* (*fp_FotoNBioAPI_EnumerateDevice) (NBioAPI_HANDLE g_hBSP);
 
 int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
@@ -42,17 +45,29 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 				return 1;
 		}
 
+		// Get function pointer
+		fp_FotoNBioAPI_InitLog FotoNBioAPI_InitLog;
+		FotoNBioAPI_InitLog = (fp_FotoNBioAPI_InitLog) GetProcAddress(hinstLib, "FotoNBioAPI_InitLog");
+		if (FotoNBioAPI_InitLog == NULL) {
+				printf("ERROR: unable to find DLL function\n");
+				return 1;
+		}
+		int res = FotoNBioAPI_InitLog();
+		if (res==0)
+			cout << "InitLog OK\n";
+		else
+			cout << "InitLog Error\n";
 
 		// Get function pointer
-		importFunction_LPCTSTR FotoNBioAPI_CheckValidity;
-		FotoNBioAPI_CheckValidity = (importFunction_LPCTSTR) GetProcAddress(hinstLib, "FotoNBioAPI_CheckValidity");
+		fp_FotoNBioAPI_CheckValidity FotoNBioAPI_CheckValidity;
+		FotoNBioAPI_CheckValidity = (fp_FotoNBioAPI_CheckValidity) GetProcAddress(hinstLib, "FotoNBioAPI_CheckValidity");
 		if (FotoNBioAPI_CheckValidity == NULL) {
 				printf("ERROR: unable to find DLL function\n");
 				return 1;
 		}
 
 		cout << "Llamado a la funcion FotoNBioAPI_CheckValidity\n";
-		NBioAPI_RETURN ret = FotoNBioAPI_CheckValidity((LPCTSTR)"NBioBSP.dll");
+		NBioAPI_RETURN ret = FotoNBioAPI_CheckValidity();
 
 		if (ret == NBioAPIERROR_NONE)
 			cout << "DLL OK\n";
@@ -66,7 +81,30 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 				printf("ERROR: unable to find DLL function\n");
 				return 1;
 		}
-		dll_handle = (unsigned long) fp_FotoNBioAPI_Init();
+		dll_handle = (unsigned long) FotoNBioAPI_Init();
+
+		// Get function pointer
+		fp_FotoNBioAPI_EnumerateDevice FotoNBioAPI_EnumerateDevice;
+		FotoNBioAPI_EnumerateDevice = (fp_FotoNBioAPI_EnumerateDevice) GetProcAddress(hinstLib, "FotoNBioAPI_EnumerateDevice");
+		if (FotoNBioAPI_EnumerateDevice == NULL) {
+				printf("ERROR: unable to find DLL function\n");
+				return 1;
+		}
+		cout << FotoNBioAPI_EnumerateDevice(dll_handle);
+
+
+		// Get function pointer
+		fp_FotoNBioAPI_ShutdownLog FotoNBioAPI_ShutdownLog;
+		FotoNBioAPI_ShutdownLog = (fp_FotoNBioAPI_ShutdownLog) GetProcAddress(hinstLib, "FotoNBioAPI_ShutdownLog");
+		if (FotoNBioAPI_ShutdownLog == NULL) {
+				printf("ERROR: unable to find DLL function\n");
+				return 1;
+		}
+		res = FotoNBioAPI_ShutdownLog();
+		if (res==0)
+			cout << "ShutdownLog OK\n";
+		else
+			cout << "ShutdownLog Error\n";
 
 		cout << "Presione ENTER para finalizar...\n" << endl;
 

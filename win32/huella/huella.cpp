@@ -16,9 +16,13 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 #include "NBioAPI_CheckValidity.h"
 #include <iostream.h>
 
-extern "C" __declspec(dllexport) unsigned long FotoNBioAPI_Init();
-extern "C" __declspec(dllexport) NBioAPI_RETURN FotoNBioAPI_CheckValidity(LPCTSTR szModulePath);
-//extern "C" __declspec(dllexport) const char* FotoNBioAPI_EnumerateDevice(NBioAPI_HANDLE g_hBSP);
+extern "C" __declspec(dllexport)unsigned long FotoNBioAPI_Init();
+extern "C" __declspec(dllexport)int FotoNBioAPI_InitLog();
+extern "C" __declspec(dllexport)int FotoNBioAPI_ShutdownLog();
+extern "C" __declspec(dllexport)NBioAPI_RETURN FotoNBioAPI_CheckValidity();
+extern "C" __declspec(dllexport) const char* FotoNBioAPI_EnumerateDevice(NBioAPI_HANDLE g_hBSP);
+
+int fprintf (FILE *, const char *, ...);
 
 //HINSTANCE m_hLib;
 //static HINSTANCE m_hLib;
@@ -70,25 +74,62 @@ static FP_NBioAPI_Verify                fp_NBioAPI_Verify;
 // Skin Function
 static FP_NBioAPI_SetSkinResource       fp_NBioAPI_SetSkinResource;
 
+static FILE *stream;
+
+int debug_message (const char* buf)
+{
+	if (stream==NULL)
+		return -1;
+	else
+		return fprintf(stream,buf);
+}
+
+extern "C" __declspec(dllexport) int FotoNBioAPI_InitLog()
+{
+	/* Open for write */
+	if( (stream  = fopen( "trace.log", "w+" )) == NULL )
+	{
+		printf( "The file 'trace.log' was not opened\n" );
+		return -1;
+	}
+	else
+		printf( "The file 'trace.log' was opened\n" );
+
+	fprintf(stream,"LogInit\n");
+	return 0;
+}
+
+extern "C" __declspec(dllexport) int FotoNBioAPI_ShutdownLog()
+{
+	/* Close stream */
+	if( fclose( stream ) )
+	{
+		printf( "The file 'trace.log' was not closed\n" );
+		return -1;
+	}
+	return 0;
+}
+
 unsigned long FotoNBioAPI_Init()
 {
-	return 100;
+	//FotoNBioAPI_InitLog();
+	debug_message("FotoNBioAPI_Init called\n");
+	//FotoNBioAPI_ShutdownLog();
+	//return 5;
 
 	//return 1;
 	HINSTANCE m_hLib;
 
 	m_hLib = 0;
-	//m_hLib = LoadLibrary("NBioBSP.DLL");
+	m_hLib = LoadLibrary("NBioBSP.DLL");
    
     m_dErrorNum = 0;
 
     if ( !m_hLib )
     {
-		//AfxMessageBox(_T("LoadLibrary failed !!!"));
+		debug_message("LoadLibrary failed !!!\n");
 		return 0;
     }
-
-    //return 0;
 
 	// Basic Functions
 	fp_NBioAPI_Init = (FP_NBioAPI_Init) GetProcAddress(m_hLib, "NBioAPI_Init");
@@ -137,28 +178,47 @@ unsigned long FotoNBioAPI_Init()
 
 	NBioAPI_HANDLE handle = 1;
 	fp_NBioAPI_Init(&handle);
+	debug_message("fp_NBioAPI_Init(&handle);\n");
 	m_hBSP = handle;
-	//cout << handle;
-	return 100;
-	//return handle;
-	//return m_hBSP;
+	return handle;
 }
 
-NBioAPI_RETURN FotoNBioAPI_CheckValidity(LPCTSTR szModulePath)
+NBioAPI_RETURN FotoNBioAPI_CheckValidity()
 {
-	return NBioAPI_CheckValidity(szModulePath);
+	return NBioAPI_CheckValidity("NBioBSP.DLL");
 }
 
-/*
+
 const char* FotoNBioAPI_EnumerateDevice(NBioAPI_HANDLE g_hBSP)
 {
 	NBioAPI_RETURN ret;
-	NBioAPI_UINT32 nDeviceNum;
-	NBioAPI_DEVICE_ID **pDeviceList = NULL;
+	NBioAPI_UINT32 nDeviceNum = 0;
+	NBioAPI_DEVICE_ID* pDeviceList = NULL;
 	static char buf[100];
+	int n;
+
+	sprintf(buf,"Received handle %u\n",g_hBSP);
+	debug_message(buf);
 
 	//Get device list in the PC.
-	ret = NBioAPI_EnumerateDevice(g_hBSP, &nDeviceNum, pDeviceList);
+	ret = fp_NBioAPI_EnumerateDevice(g_hBSP, &nDeviceNum, &pDeviceList);
+
+	if (ret==NBioAPIERROR_NONE)
+	{
+		sprintf(buf,"%lu devices found\n", nDeviceNum);
+		if (nDeviceNum == 0)
+			debug_message("0 devices found\n");
+		debug_message(buf);
+		return buf;
+	}
+	else
+	{
+		sprintf(buf,"ERROR: 0x%lx\n",ret);
+		debug_message(buf);
+
+		return buf;
+	}
+
 	/*for (UINT32 i=0;i<nDeviceNum;i++)
 	{
 		if((pDeviceList(i) & 0x00FF)== NBioAPI_DEVICE_NAME_FDP02)
@@ -177,5 +237,5 @@ const char* FotoNBioAPI_EnumerateDevice(NBioAPI_HANDLE g_hBSP)
 	//char buf[100];
 	//snprintf(buf, sizeof(buf), "%d,%d", nDeviceNum, pDeviceList);
 	//return buf;
-}
 */
+}
