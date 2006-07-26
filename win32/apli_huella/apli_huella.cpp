@@ -24,11 +24,19 @@ typedef int (*fp_FotoNBioAPI_ShutdownLog) ();
 typedef const char* (*fp_FotoNBioAPI_EnumerateDevice) (NBioAPI_HANDLE g_hBSP);
 typedef NBioAPI_RETURN (*fp_FotoNBioAPI_OpenDevice) (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID);
 typedef NBioAPI_RETURN (*fp_FotoNBioAPI_CloseDevice) (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID);
+typedef NBioAPI_DEVICE_INFO_0* (*fp_FotoNBioAPI_GetDeviceInfo)  (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID);
+
+
+// prueba_juan
+typedef NBioAPI_RETURN (*fp_NBioAPI_OpenDevice) (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID);
 
 int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
 	int nRetCode = 0;
 	unsigned long dll_handle;
+
+	int nRetCode2 = 0;
+	unsigned long dll_handle2;
 
 	// initialize MFC and print and error on failure
 	if (!AfxWinInit(::GetModuleHandle(NULL), NULL, ::GetCommandLine(), 0))
@@ -85,15 +93,51 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 		}
 		dll_handle = (unsigned long) FotoNBioAPI_Init();
 
+		/*
+		// prueba_juan
+		// Load DLL file
+		HINSTANCE hinstLib2 = LoadLibrary("NBioBSP.DLL");
+		if (hinstLib2 == NULL) {
+				printf("ERROR: unable to load DLL\n");
+				return 1;
+		}
+		FP_NBioAPI_Init            fp_NBioAPI_Init;
+		fp_NBioAPI_Init = (FP_NBioAPI_Init) GetProcAddress(hinstLib2, "NBioAPI_Init");
+		//NBioAPI_OpenDevice = (fp_NBioAPI_OpenDevice) GetProcAddress(hinstLib2, "NBioAPI_OpenDevice");
+		if (fp_NBioAPI_Init == NULL) {
+				printf("ERROR: unable to find DLL function\n");
+				return 1;
+		}
+		fp_NBioAPI_Init(&dll_handle2);
+
+		FP_NBioAPI_OpenDevice            fp_NBioAPI_OpenDevice;
+		fp_NBioAPI_OpenDevice = (FP_NBioAPI_OpenDevice) GetProcAddress(hinstLib2, "NBioAPI_OpenDevice");
+		//NBioAPI_OpenDevice = (fp_NBioAPI_OpenDevice) GetProcAddress(hinstLib2, "NBioAPI_OpenDevice");
+		if (fp_NBioAPI_OpenDevice == NULL) {
+				printf("ERROR: unable to find DLL function\n");
+				return 1;
+		}
+		NBioAPI_RETURN ret2 = fp_NBioAPI_OpenDevice(dll_handle2,NBioAPI_DEVICE_NAME_FDU01);
+		
+		// la otra prueba
+		FP_NBioAPI_GetDeviceInfo         fp_NBioAPI_GetDeviceInfo;
+		fp_NBioAPI_GetDeviceInfo = (FP_NBioAPI_GetDeviceInfo) GetProcAddress(hinstLib2, "NBioAPI_GetDeviceInfo");
+
+		NBioAPI_DEVICE_INFO_0 Device_info0;
+		memset(&Device_info0, 0, sizeof(Device_info0));
+		//NBioAPI_DEVICE_INFO_PTR pDeviceInfo = &DeviceInfo;
+		//NBioAPI_DEVICE_INFO_PTR pDeviceInfo = NULL;
+		ret2 = fp_NBioAPI_GetDeviceInfo (dll_handle2, NBioAPI_DEVICE_NAME_FDU01, 0, &Device_info0);
+		*/
+
 		// Get function pointer
-		fp_FotoNBioAPI_EnumerateDevice FotoNBioAPI_EnumerateDevice;
+		fp_FotoNBioAPI_EnumerateDevice            FotoNBioAPI_EnumerateDevice;
 		FotoNBioAPI_EnumerateDevice = (fp_FotoNBioAPI_EnumerateDevice) GetProcAddress(hinstLib, "FotoNBioAPI_EnumerateDevice");
 		if (FotoNBioAPI_EnumerateDevice == NULL) {
 				printf("ERROR: unable to find DLL function\n");
 				return 1;
 		}
 		cout << "Found devices: " << FotoNBioAPI_EnumerateDevice(dll_handle) << "\n";
-
 		
 		// Get function pointer
 		fp_FotoNBioAPI_OpenDevice FotoNBioAPI_OpenDevice;
@@ -106,6 +150,17 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 			cout << "Device initialized\n";
 		else
 			cout << "Device could not be initialized!\n";
+
+		// Get function pointer
+		fp_FotoNBioAPI_GetDeviceInfo FotoNBioAPI_GetDeviceInfo;
+		FotoNBioAPI_GetDeviceInfo = (fp_FotoNBioAPI_GetDeviceInfo) GetProcAddress(hinstLib, "FotoNBioAPI_GetDeviceInfo");
+		if (FotoNBioAPI_GetDeviceInfo == NULL) {
+				printf("ERROR: unable to find DLL function\n");
+				return 1;
+		}
+		
+		NBioAPI_DEVICE_INFO_0* Device_info0 = NULL;
+		Device_info0 = FotoNBioAPI_GetDeviceInfo(dll_handle,NBioAPI_DEVICE_NAME_FDU01);
 
 		// Get function pointer
 		fp_FotoNBioAPI_CloseDevice FotoNBioAPI_CloseDevice;

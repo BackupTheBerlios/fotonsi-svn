@@ -23,18 +23,16 @@ extern "C" __declspec(dllexport)NBioAPI_RETURN FotoNBioAPI_CheckValidity();
 extern "C" __declspec(dllexport) const char* FotoNBioAPI_EnumerateDevice(NBioAPI_HANDLE g_hBSP);
 extern "C" __declspec(dllexport)NBioAPI_RETURN FotoNBioAPI_OpenDevice (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID);
 extern "C" __declspec(dllexport)NBioAPI_RETURN FotoNBioAPI_CloseDevice    (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID);
-extern "C" __declspec(dllexport)NBioAPI_RETURN FotoNBioAPI_GetDeviceInfo  (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID, NBioAPI_UINT8 nStructureType, NBioAPI_DEVICE_INFO_PTR pDeviceInfo);
+extern "C" __declspec(dllexport)NBioAPI_DEVICE_INFO_0* FotoNBioAPI_GetDeviceInfo  (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID);
 
-
-
-//int fprintf (FILE *, const char *, ...);
-
-//HINSTANCE m_hLib;
-//static HINSTANCE m_hLib;
+// variables globales que vamos a usar
 static NBioAPI_HANDLE m_hBSP;
 static NBioAPI_FIR_FORMAT m_nFIRFormat;
 static DWORD m_dErrorNum;
+static NBioAPI_DEVICE_INFO_0 Device_info0;
+static FILE *stream;
 
+// punteros a funciones que cargaremos en memoria al inicializar la DLL
 // Init/Terminate Function   
 static FP_NBioAPI_Init                  fp_NBioAPI_Init;
 static FP_NBioAPI_Terminate             fp_NBioAPI_Terminate;
@@ -79,8 +77,7 @@ static FP_NBioAPI_Verify                fp_NBioAPI_Verify;
 // Skin Function
 static FP_NBioAPI_SetSkinResource       fp_NBioAPI_SetSkinResource;
 
-static FILE *stream;
-
+// escribe un mensaje debug en el fichero de traza
 int debug_message (const char* buf)
 {
 	if (stream==NULL)
@@ -89,6 +86,7 @@ int debug_message (const char* buf)
 		return fprintf(stream,buf);
 }
 
+// abre el fichero de log para poder escribir
 int FotoNBioAPI_InitLog()
 {
 	/* Open for write */
@@ -104,6 +102,7 @@ int FotoNBioAPI_InitLog()
 	return 0;
 }
 
+// cierra el fichero de log
 int FotoNBioAPI_ShutdownLog()
 {
 	/* Close stream */
@@ -115,6 +114,7 @@ int FotoNBioAPI_ShutdownLog()
 	return 0;
 }
 
+// inicializa esta DLL y la original, cargando las funciones en memoria
 unsigned long FotoNBioAPI_Init()
 {
 	//FotoNBioAPI_InitLog();
@@ -181,26 +181,26 @@ unsigned long FotoNBioAPI_Init()
 	m_hBSP = 0;
 	m_nFIRFormat = NBioAPI_FIR_FORMAT_EXTENSION;
 
-	NBioAPI_HANDLE handle = 1;
+	NBioAPI_HANDLE handle = 0;
 	fp_NBioAPI_Init(&handle);
 	debug_message("fp_NBioAPI_Init(&handle);\n");
 	m_hBSP = handle;
 	return handle;
 }
 
+// chequea que la DLL original no ha sido "tocada"
 NBioAPI_RETURN FotoNBioAPI_CheckValidity()
 {
 	return NBioAPI_CheckValidity("NBioBSP.DLL");
 }
 
-
+//devuelve una cadena con los dispositivos conectados, p.ej. "FDU01FD02..."
 const char* FotoNBioAPI_EnumerateDevice(NBioAPI_HANDLE g_hBSP)
 {
 	NBioAPI_RETURN ret;
 	NBioAPI_UINT32 nDeviceNum = 0;
 	NBioAPI_DEVICE_ID* pDeviceList = NULL;
 	static char buf[100];
-	int n;
 
 	sprintf(buf,"Received handle %u\n",g_hBSP);
 	debug_message(buf);
@@ -260,18 +260,22 @@ const char* FotoNBioAPI_EnumerateDevice(NBioAPI_HANDLE g_hBSP)
 	}
 }
 
+// igual que la función original
 NBioAPI_RETURN FotoNBioAPI_OpenDevice (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID)
 {
 	return fp_NBioAPI_OpenDevice(hHandle,nDeviceID); 
 }
 
+// igual que la función original
 NBioAPI_RETURN FotoNBioAPI_CloseDevice    (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID)
 {
 	return fp_NBioAPI_CloseDevice(hHandle,nDeviceID); 
 }
 
-NBioAPI_RETURN FotoNBioAPI_GetDeviceInfo (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID, NBioAPI_UINT8 nStructureType, NBioAPI_DEVICE_INFO_PTR pDeviceInfo)
+// igual que la función original, pero devuelve un puntero al struct del tipo NBioAPI_DEVICE_INFO_0 almacenado en memoria
+NBioAPI_DEVICE_INFO_0* FotoNBioAPI_GetDeviceInfo (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID)
 {
-	//TODO
-	return 0;
+	memset(&Device_info0, 0, sizeof(Device_info0));
+	NBioAPI_RETURN ret = fp_NBioAPI_GetDeviceInfo (hHandle, nDeviceID, 0, &Device_info0);
+	return &Device_info0;
 }
