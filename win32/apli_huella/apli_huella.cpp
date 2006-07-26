@@ -22,6 +22,8 @@ typedef NBioAPI_RETURN (*fp_FotoNBioAPI_CheckValidity)();
 typedef int (*fp_FotoNBioAPI_InitLog) ();
 typedef int (*fp_FotoNBioAPI_ShutdownLog) ();
 typedef const char* (*fp_FotoNBioAPI_EnumerateDevice) (NBioAPI_HANDLE g_hBSP);
+typedef NBioAPI_RETURN (*fp_FotoNBioAPI_OpenDevice) (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID);
+typedef NBioAPI_RETURN (*fp_FotoNBioAPI_CloseDevice) (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID);
 
 int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
@@ -90,8 +92,32 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 				printf("ERROR: unable to find DLL function\n");
 				return 1;
 		}
-		cout << FotoNBioAPI_EnumerateDevice(dll_handle);
+		cout << "Found devices: " << FotoNBioAPI_EnumerateDevice(dll_handle) << "\n";
 
+		
+		// Get function pointer
+		fp_FotoNBioAPI_OpenDevice FotoNBioAPI_OpenDevice;
+		FotoNBioAPI_OpenDevice = (fp_FotoNBioAPI_OpenDevice) GetProcAddress(hinstLib, "FotoNBioAPI_OpenDevice");
+		if (FotoNBioAPI_OpenDevice == NULL) {
+				printf("ERROR: unable to find DLL function\n");
+				return 1;
+		}
+		if (FotoNBioAPI_OpenDevice(dll_handle,NBioAPI_DEVICE_NAME_FDU01)==NBioAPIERROR_NONE)
+			cout << "Device initialized\n";
+		else
+			cout << "Device could not be initialized!\n";
+
+		// Get function pointer
+		fp_FotoNBioAPI_CloseDevice FotoNBioAPI_CloseDevice;
+		FotoNBioAPI_CloseDevice = (fp_FotoNBioAPI_CloseDevice) GetProcAddress(hinstLib, "FotoNBioAPI_CloseDevice");
+		if (FotoNBioAPI_CloseDevice == NULL) {
+				printf("ERROR: unable to find DLL function\n");
+				return 1;
+		}
+		if (FotoNBioAPI_CloseDevice(dll_handle,NBioAPI_DEVICE_NAME_FDU01)==NBioAPIERROR_NONE)
+			cout << "Device closed\n";
+		else
+			cout << "Device could not be closed!\n";
 
 		// Get function pointer
 		fp_FotoNBioAPI_ShutdownLog FotoNBioAPI_ShutdownLog;

@@ -21,8 +21,13 @@ extern "C" __declspec(dllexport)int FotoNBioAPI_InitLog();
 extern "C" __declspec(dllexport)int FotoNBioAPI_ShutdownLog();
 extern "C" __declspec(dllexport)NBioAPI_RETURN FotoNBioAPI_CheckValidity();
 extern "C" __declspec(dllexport) const char* FotoNBioAPI_EnumerateDevice(NBioAPI_HANDLE g_hBSP);
+extern "C" __declspec(dllexport)NBioAPI_RETURN FotoNBioAPI_OpenDevice (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID);
+extern "C" __declspec(dllexport)NBioAPI_RETURN FotoNBioAPI_CloseDevice    (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID);
+extern "C" __declspec(dllexport)NBioAPI_RETURN FotoNBioAPI_GetDeviceInfo  (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID, NBioAPI_UINT8 nStructureType, NBioAPI_DEVICE_INFO_PTR pDeviceInfo);
 
-int fprintf (FILE *, const char *, ...);
+
+
+//int fprintf (FILE *, const char *, ...);
 
 //HINSTANCE m_hLib;
 //static HINSTANCE m_hLib;
@@ -84,7 +89,7 @@ int debug_message (const char* buf)
 		return fprintf(stream,buf);
 }
 
-extern "C" __declspec(dllexport) int FotoNBioAPI_InitLog()
+int FotoNBioAPI_InitLog()
 {
 	/* Open for write */
 	if( (stream  = fopen( "trace.log", "w+" )) == NULL )
@@ -99,7 +104,7 @@ extern "C" __declspec(dllexport) int FotoNBioAPI_InitLog()
 	return 0;
 }
 
-extern "C" __declspec(dllexport) int FotoNBioAPI_ShutdownLog()
+int FotoNBioAPI_ShutdownLog()
 {
 	/* Close stream */
 	if( fclose( stream ) )
@@ -206,36 +211,67 @@ const char* FotoNBioAPI_EnumerateDevice(NBioAPI_HANDLE g_hBSP)
 	if (ret==NBioAPIERROR_NONE)
 	{
 		sprintf(buf,"%lu devices found\n", nDeviceNum);
-		if (nDeviceNum == 0)
-			debug_message("0 devices found\n");
 		debug_message(buf);
+		if (nDeviceNum == 0)
+		{
+			return "";
+		}
+		else
+		{
+			sprintf(buf,"");
+			for (UINT32 i=0;i<nDeviceNum;i++)
+			{
+				if((pDeviceList[i] & 0x00FF)== NBioAPI_DEVICE_NAME_FDP02)
+				{
+					sprintf(buf+strlen(buf),"FDP02");
+				}
+				else if ((pDeviceList[i] & 0x00FF) == NBioAPI_DEVICE_NAME_FDU01)
+				{	
+					sprintf(buf+strlen(buf),"FDU01");
+				}
+				
+				//else if ((pDeviceList[i] & 0x00FF) == NBioAPI_DEVICE_NAME_OSU01)
+				//{	
+				//	sprintf(buf+strlen(buf),"OSU01");
+				//}
+				
+				else if ((pDeviceList[i] & 0x00FF) == NBioAPI_DEVICE_NAME_FDU11)
+				{	
+					sprintf(buf+strlen(buf),"FDU11");
+				}
+				else if ((pDeviceList[i] & 0x00FF) == NBioAPI_DEVICE_NAME_FSC01)
+				{	
+					sprintf(buf+strlen(buf),"FSC01");
+				}
+				
+			}
+			// para enviarlo en crudo seria tal que asi
+			//sprintf(buf, "%d,%d", nDeviceNum, pDeviceList);
+			return buf;
+		}
+
 		return buf;
 	}
 	else
 	{
 		sprintf(buf,"ERROR: 0x%lx\n",ret);
 		debug_message(buf);
-
 		return buf;
 	}
+}
 
-	/*for (UINT32 i=0;i<nDeviceNum;i++)
-	{
-		if((pDeviceList(i) & 0x00FF)== NBioAPI_DEVICE_NAME_FDP02)
-		{
-			sprintf(buf,"FDP02");
-		}
-		else if ((pDeviceList(i) & 0x00FF)) == NBioAPI_DEVICE_NAME_FDU01)
-		{	
-			sprintf(buf,"FDU01");
-		}
-	}*/
-/*
-	sprintf(buf,"%d", nDeviceNum);
-	return buf;
+NBioAPI_RETURN FotoNBioAPI_OpenDevice (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID)
+{
+	return fp_NBioAPI_OpenDevice(hHandle,nDeviceID); 
+}
 
-	//char buf[100];
-	//snprintf(buf, sizeof(buf), "%d,%d", nDeviceNum, pDeviceList);
-	//return buf;
-*/
+NBioAPI_RETURN FotoNBioAPI_CloseDevice    (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID)
+{
+	return fp_NBioAPI_CloseDevice(hHandle,nDeviceID); 
+}
+
+NBioAPI_RETURN FotoNBioAPI_GetDeviceInfo (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID, NBioAPI_UINT8 nStructureType, NBioAPI_DEVICE_INFO_PTR pDeviceInfo)
+{
+	//TODO
+	return 0;
 }
