@@ -97,7 +97,7 @@ do
                 # Si no se encontró la fecha (grep devuelve un valor distinto de 0), es que no se hizo la copia	
                 if [ $ESTADO_HIST -ne 0  ]; then
                         DESC="error $CLIENTE, `echo $DESC`"
-                        ALERTA=$STATE_ERROR
+                        ALERTA=$STATE_CRITICAL
 		fi
         fi
 
