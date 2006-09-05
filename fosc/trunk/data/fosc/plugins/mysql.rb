@@ -12,7 +12,10 @@ module Fosc
     module Plugins
         class Mysql < BasePlugin
             def export(bd)
+                puts "--- #{generation_timestamp}"
                 bd.tables.each do |t|
+                    puts "DROP TABLE #{t.name};" if @options[:drop_table];
+
                     puts "CREATE TABLE #{t.name} ("
                     list = Array.new
                     extras = Array.new
