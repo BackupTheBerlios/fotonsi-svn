@@ -13,7 +13,7 @@ module Fosc
                 @valid_types = [ 'id', 'int', 'float', 'smallint',
                                  'char', 'varchar', 'memo', 'bool',
                                  'datetime', 'date', 'time',
-                                 'currency', 'binary' ]
+                                 'currency', 'binary', 'bigint']
                 @fields     = []
                 @attributes = []
             end
