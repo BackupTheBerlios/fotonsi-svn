@@ -8,9 +8,13 @@ module Fosc
             def initialize(options={})
                 @options = options
             end
-            
+
             def generation_timestamp
-                "FILE GENERATED FOR #{self.class.name.upcase} AT #{Time.now}"   
+                "FILE GENERATED FOR #{plugin_name.upcase} AT #{Time.now}"   
+            end
+
+            def plugin_name
+                self.class.name.sub(/.*::/, '')
             end
         end
     end
