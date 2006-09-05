@@ -7,10 +7,13 @@ module FoscMixin
         end
     end
 
-    def assert_fosc_output(expected_output, file, additional_opts = "")
+    def assert_fosc_output(expected_output, file, additional_opts="", user_opts={})
+        opts = {:skip_lines => 0}.merge(user_opts)
         output_str = ""
+        line_number = 0
         each_fosc_output_line(file, additional_opts) do |line|
-            output_str += line
+            output_str += line if line_number >= opts[:skip_lines]
+            line_number += 1
         end
         assert_equal(expected_output.strip, output_str.strip)
     end
