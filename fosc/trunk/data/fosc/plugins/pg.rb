@@ -7,6 +7,7 @@ $types = { "id"       => "serial",
            "binary"   => "bytea",
            "float"    => "double precision",
            "bool"     => "boolean",
+           "bigint"   => "bigint",
          }
 
 require 'plugins/base_plugin'
@@ -15,6 +16,7 @@ module Fosc
     module Plugins
         class Pg < BasePlugin
             def export(bd)
+                puts "--- #{generation_timestamp}"
                 foreign_keys = Array.new
                 structure = Array.new
                 bd.elements('table').each do |t|
