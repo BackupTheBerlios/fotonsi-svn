@@ -72,6 +72,7 @@ second for each one.
 [+varchar+] Variable-size characters string (receives a parameter with the
             _maximum_ number of characters allowed in the string)
 [+int+] Integer.
+[+bigint+] Big integer.
 [+smallint+] Small integer.
 [+float+] Floating point number.
 [+memo+] Big text data field.
