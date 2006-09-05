@@ -33,6 +33,25 @@ CREATE TABLE some_table (
   PRIMARY KEY(id)
 );
 EOS
-        assert_fosc_output(expected, 'test-access.fos', 'pg -t some_table')
+        assert_fosc_output(expected, 'test-access.fos', 'pg -t some_table', :skip_lines => 1)
     end
+
+    def test_timestamp
+        found = false
+        each_fosc_output_line('test-pg1.fos', 'pg') do |line|
+            found = true if line =~ /^--- FILE GENERATED FOR/
+        end
+        assert(found)
+    end
+
+    def test_bigint
+        expected = <<EOS
+CREATE TABLE some_table (
+  some_col bigint
+);
+EOS
+        assert_fosc_output(expected, 'test-pg3.fos', 'pg', :skip_lines => 1)
+    end
+
+
 end
