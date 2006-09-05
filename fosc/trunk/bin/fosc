@@ -43,30 +43,34 @@ class FoscApp < CommandLine::Application
     end
 
     def main
-        fich, driverType = @args
-        driverType       ||= 'mysql'
+        fich, driver_type = @args
+        unless driver_type
+            $stderr.puts "Output plugin not specified. Using default plugin 'mysql'"
+            sleep 1
+            driver_type = "mysql"
+        end
 
         fc = Fosc::FosConverter.new(@fosc_options)
 
         begin
             fc.convert_file(fich)
 
-            require "plugins/#{driverType}"
-            driverClass = filename_to_class(driverType)
+            require "plugins/#{driver_type}"
+            driverClass = filename_to_class(driver_type)
             driver = Fosc::Plugins.const_get(driverClass).new(@fosc_options)
         rescue Fosc::Elements::Exception => e
             $stderr.puts "Could not load element #{e.plugin_name}: #{e}"
         rescue LoadError, NameError => e
-            $stderr.puts "Can't load driver '#{driverType}': #{e}"
+            $stderr.puts "Can't load driver '#{driver_type}': #{e}"
             raise e
         end
 
         begin
             driver.export(fc.dataBase)
         rescue ArgumentError => e
-            $stderr.puts "Driver runtime error: #{driverType}: #{e}"
+            $stderr.puts "Driver runtime error: #{driver_type}: #{e}"
         rescue Fosc::Plugins::FosPluginError => e
-            $stderr.puts "Error processing #{fich} with plugin '#{driverType}': #{e.class}: #{e}"
+            $stderr.puts "Error processing #{fich} with plugin '#{driver_type}': #{e.class}: #{e}"
         end
     end
 end
