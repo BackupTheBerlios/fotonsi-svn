@@ -13,8 +13,8 @@ class TC_Table <Test::Unit::TestCase
 
    def test_tables
       t = Fosc::Elements::Table.new('ttests')
-      t.new_field(Fosc::Elements::Table::TableField.new('id', 'id'))
-      t.new_field(Fosc::Elements::Table::TableField.new('field', 'char', '20'))
+      t.new_field(Fosc::Elements::Table::TableField.new('ttests', 'id', 'id'))
+      t.new_field(Fosc::Elements::Table::TableField.new('ttests', 'field', 'char', '20'))
       @db.new_table(t)
 
       assert_equal(1, @db.tables.length)

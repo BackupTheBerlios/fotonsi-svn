@@ -50,7 +50,7 @@ module Fosc
                             $stderr.puts "Warning: Non-standard type '#{type}'"
                             sleep 1
                         end
-                        tmp = TableField.new(chunks[0], type, params)
+                        tmp = TableField.new(@name, chunks[0], type, params)
                         # Skip field name and type
                         chunks[2..chunks.length].each do |t|
                             if t =~ /^ref\((.+)\((.+)\)\)/
@@ -116,7 +116,8 @@ module Fosc
             # Table field
             class TableField
                 attr_accessor :name, :data_type, :data_type_param, :reference
-                attr_reader :attributes
+                attr_reader :attributes, :table_name
+
                 alias_method :type, :data_type
                 alias_method :params, :data_type_param
                 alias_method :dataType, :data_type
@@ -124,7 +125,8 @@ module Fosc
                 alias_method :dataTypeParam, :data_type_param
                 alias_method :"dataTypeParam=", :"data_type_param="
 
-                def initialize(name, type, data_type_param = nil)
+                def initialize(table_name, name, type, data_type_param = nil)
+                    @table_name = table_name
                     @name = name
                     @data_type = type
                     @data_type_param = data_type_param
