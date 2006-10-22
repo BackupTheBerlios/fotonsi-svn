@@ -141,6 +141,10 @@ module Fosc
                 def attribute_value(attr)
                     @attr_values[attr]
                 end
+
+                def primary_key?
+                    @name == "id" or @attributes.include?("primary")
+                end
             end
 
 
