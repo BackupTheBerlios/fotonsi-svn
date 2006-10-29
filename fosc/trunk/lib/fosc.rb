@@ -92,7 +92,11 @@ module Fosc
                 begin
                     driver.import(lines)
                     lt = @options['limit_tables']
-                    if not driver.empty? and (lt.nil? or lt.include?(driver.name))
+                    it = @options['ignore_tables']
+                    if not driver.empty? and
+                       (it.nil? or not it.include?(driver.name)) and
+                       (lt.nil? or lt.include?(driver.name))
+
                         lt and lt.delete(driver.name)
                         @database.new_element(driver)
                     end

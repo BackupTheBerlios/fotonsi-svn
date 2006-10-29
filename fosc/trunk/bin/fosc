@@ -36,6 +36,8 @@ class FoscApp < CommandLine::Application
                :opt_found => lambda {@fosc_options[:output] = 'integrity'}
         option :names => %w(--aplic-name --app-name -a), :arity => 1,
                :opt_found => lambda {|o,s,v| @fosc_options[:aplic] = v}
+        option :names => %w(-x --ignore-tables), :arity => 1,
+               :opt_found => lambda {|o,s,v| @fosc_options[:ignore_tables] = v.join(',').split(',')}
         option :names => %w(--add-drop-table -d), :arity => 0,
                :opt_found => lambda {|o,s,v| @fosc_options[:drop_table] = true}
 

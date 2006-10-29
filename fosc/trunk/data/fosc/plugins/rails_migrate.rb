@@ -313,6 +313,11 @@ module Fosc
 
                 bd_names.delete('schema_info') # ignore schema_info table
 
+                (@options["ignore_tables"] || []).each {|t|
+                    bd_names.delete(t)
+                    fosc_names.delete(t)
+                }
+
                 {
                     :created => fosc_names - bd_names,
                     :removed => bd_names - fosc_names,
