@@ -313,10 +313,15 @@ module Fosc
 
                 bd_names.delete('schema_info') # ignore schema_info table
 
-                (@options["ignore_tables"] || []).each {|t|
-                    bd_names.delete(t)
-                    fosc_names.delete(t)
-                }
+                if it = @options["ignore_tables"]
+                    bd_names = bd_names - it
+                    fosc_names = fosc_names - it
+                end
+
+                if lt = @options["limit_tables"]
+                    bd_names = bd_names & lt
+                    fosc_names = fosc_names & lt
+                end
 
                 {
                     :created => fosc_names - bd_names,

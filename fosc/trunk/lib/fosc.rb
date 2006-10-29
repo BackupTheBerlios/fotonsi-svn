@@ -13,6 +13,7 @@ module Fosc
 
         def initialize(options={})
             @options = options
+            @defined_tables = []
         end
 
         def convert_file(file)
@@ -78,8 +79,8 @@ module Fosc
             define_element(element_driver, element_data)
 
             lt = @options['limit_tables'] 
-            if lt and not lt.empty?
-                $stderr.puts "WARNING: Undefined tables: " + lt.join(", ")
+            if lt and not (undefined = lt - @defined_tables).empty?
+                $stderr.puts "WARNING: Undefined tables: " + undefined.join(", ")
             end
 
             @database
@@ -97,7 +98,7 @@ module Fosc
                        (it.nil? or not it.include?(driver.name)) and
                        (lt.nil? or lt.include?(driver.name))
 
-                        lt and lt.delete(driver.name)
+                        @defined_tables << driver.name
                         @database.new_element(driver)
                     end
                 rescue Fosc::Elements::FosSyntaxError => e
