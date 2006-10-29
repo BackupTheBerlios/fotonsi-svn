@@ -46,9 +46,8 @@ end
 class Fosc::Elements::Table::TableField
     def to_migration
         at_options = {}
-        if attributes.include?("notnull")
-            at_options[:null] = false
-        end
+        at_options[:null] = (not attributes.include?("notnull"))
+
         if attributes.include?("default")
             at_options[:default] = attribute_value("default")
         end
@@ -232,7 +231,7 @@ module Fosc
 
                         if type.to_s != bd_field.type.to_s or
                             at_options[:limit] != bd_field.limit or
-                            ((!at_options[:null]) ==  (!bd_field.null)) or
+                            (at_options[:null] != bd_field.null) or
                             at_options[:default] != bd_field.default
 
                             @code_up << "    change_column #{table.name.inspect}, #{fosc_field.str_migration}\n"
