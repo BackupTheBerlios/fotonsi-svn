@@ -12,11 +12,18 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 
 #include <stdio.h>
 #include "NBioAPI.h"
-#include "FotoNBioAPI.h"
+//#include "NBioAPI_Type.h"
+//#include "FotoNBioAPI.h"
 #include "NBioAPI_CheckValidity.h"
 #include <iostream.h>
+#include <stdlib.h>
+
 
 extern "C" __declspec(dllexport)unsigned long FotoNBioAPI_Init();
+extern "C" __declspec(dllexport)NBioAPI_RETURN FotoNBioAPI_CheckFinger();
+extern "C" __declspec(dllexport)NBioAPI_RETURN FotoNBioAPI_FreeFIRHandle(NBioAPI_FIR_HANDLE hFIR);
+extern "C" __declspec(dllexport)NBioAPI_RETURN FotoNBioAPI_FreeTextFIR(NBioAPI_FIR_TEXTENCODE_PTR pTextFIR);
+extern "C" __declspec(dllexport)NBioAPI_RETURN FotoNBioAPI_Terminate();
 extern "C" __declspec(dllexport)int FotoNBioAPI_InitLog();
 extern "C" __declspec(dllexport)int FotoNBioAPI_ShutdownLog();
 extern "C" __declspec(dllexport)NBioAPI_RETURN FotoNBioAPI_CheckValidity();
@@ -24,6 +31,8 @@ extern "C" __declspec(dllexport) const char* FotoNBioAPI_EnumerateDevice(NBioAPI
 extern "C" __declspec(dllexport)NBioAPI_RETURN FotoNBioAPI_OpenDevice (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID);
 extern "C" __declspec(dllexport)NBioAPI_RETURN FotoNBioAPI_CloseDevice    (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID);
 extern "C" __declspec(dllexport)NBioAPI_DEVICE_INFO_0* FotoNBioAPI_GetDeviceInfo  (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID);
+extern "C" __declspec(dllexport)const char* FotoNBioAPI_Enroll(NBioAPI_FIR_HANDLE hFIR, NBioAPI_FIR_PAYLOAD* payload);
+extern "C" __declspec(dllexport)BOOL FotoNBioAPI_Verify(NBioAPI_FIR_HANDLE hFIR, NBioAPI_INPUT_FIR_PTR piStoredTemplate);
 
 // variables globales que vamos a usar
 static NBioAPI_HANDLE m_hBSP;
@@ -31,6 +40,7 @@ static NBioAPI_FIR_FORMAT m_nFIRFormat;
 static DWORD m_dErrorNum;
 static NBioAPI_DEVICE_INFO_0 Device_info0;
 static FILE *stream;
+static char cadena [100000000];
 
 // punteros a funciones que cargaremos en memoria al inicializar la DLL
 // Init/Terminate Function   
@@ -77,6 +87,8 @@ static FP_NBioAPI_Verify                fp_NBioAPI_Verify;
 // Skin Function
 static FP_NBioAPI_SetSkinResource       fp_NBioAPI_SetSkinResource;
 
+static FP_NBioAPI_CheckFinger			fp_NBioAPI_CheckFinger;
+
 // escribe un mensaje debug en el fichero de traza
 int debug_message (const char* buf)
 {
@@ -112,6 +124,12 @@ int FotoNBioAPI_ShutdownLog()
 		return -1;
 	}
 	return 0;
+}
+
+NBioAPI_RETURN FotoNBioAPI_Terminate()
+{
+	debug_message("fp_NBioAPI_Terminate(&m_hBSP);\n");
+	return fp_NBioAPI_Terminate(m_hBSP);
 }
 
 // inicializa esta DLL y la original, cargando las funciones en memoria
@@ -177,6 +195,8 @@ unsigned long FotoNBioAPI_Init()
 
 	// Skin Function
 	fp_NBioAPI_SetSkinResource = (FP_NBioAPI_SetSkinResource) GetProcAddress(m_hLib, "NBioAPI_SetSkinResource");
+
+	fp_NBioAPI_CheckFinger = (FP_NBioAPI_CheckFinger) GetProcAddress(m_hLib, "NBioAPI_CheckFinger");
 
 	m_hBSP = 0;
 	m_nFIRFormat = NBioAPI_FIR_FORMAT_EXTENSION;
@@ -278,4 +298,69 @@ NBioAPI_DEVICE_INFO_0* FotoNBioAPI_GetDeviceInfo (NBioAPI_HANDLE hHandle, NBioAP
 	memset(&Device_info0, 0, sizeof(Device_info0));
 	NBioAPI_RETURN ret = fp_NBioAPI_GetDeviceInfo (hHandle, nDeviceID, 0, &Device_info0);
 	return &Device_info0;
+}
+
+NBioAPI_RETURN FotoNBioAPI_CheckFinger()
+{
+	BOOL res;
+	return fp_NBioAPI_CheckFinger(m_hBSP,&res);
+	//return res;
+}
+
+NBioAPI_RETURN FotoNBioAPI_FreeFIRHandle(NBioAPI_FIR_HANDLE hFIR)
+{
+	return fp_NBioAPI_FreeFIRHandle(m_hBSP,hFIR);
+}
+
+NBioAPI_RETURN FotoNBioAPI_FreeTextFIR(NBioAPI_FIR_TEXTENCODE_PTR pTextFIR)
+{
+	return fp_NBioAPI_FreeTextFIR(m_hBSP,pTextFIR);
+}
+
+const char* FotoNBioAPI_Enroll(NBioAPI_FIR_HANDLE hFIR, NBioAPI_FIR_PAYLOAD* payload)
+{
+  
+	NBioAPI_RETURN err;
+	NBioAPI_INPUT_FIR_PTR pstored_template = NULL;
+	NBioAPI_SINT32 time_out = -1; // 10000;
+	NBioAPI_FIR_HANDLE_PTR paudit_data = NULL;
+	NBioAPI_WINDOW_OPTION_PTR pwindow = NULL;
+   
+	err = fp_NBioAPI_Enroll(m_hBSP, NULL, &hFIR, payload, time_out, NULL, NULL);
+
+	if (err==NBioAPIERROR_NONE)
+	{
+		NBioAPI_FIR_TEXTENCODE hTextFIR;
+		memset(&hTextFIR, 0, sizeof(NBioAPI_FIR_TEXTENCODE));
+		fp_NBioAPI_GetTextFIRFromHandle(m_hBSP, hFIR, &hTextFIR, FALSE); //extended??
+		//fp_NBioAPI_GetExtendedTextFIRFromHandle(m_hBSP, hFIR, &hTextFIR, FALSE, m_nFIRFormat);
+		//DWORD dwLen = lstrlen(hTextFIR.TextFIR)+1;
+		//memcpy(&cadena,hTextFIR.TextFIR,dwLen);
+		//fwrite(&dwLen, 1, sizeof(DWORD), fp);
+		//fwrite(hTextFIR.TextFIR, 1, dwLen, fp);
+		strcpy(cadena,hTextFIR.TextFIR);
+		fp_NBioAPI_FreeTextFIR(m_hBSP, &hTextFIR);
+		return (const char*) cadena;
+	}
+	else return "ERROR";
+
+	fp_NBioAPI_FreeFIRHandle(m_hBSP,hFIR);
+}
+
+BOOL FotoNBioAPI_Verify(const char* Template)
+{
+	NBioAPI_BOOL res = FALSE;
+	NBioAPI_FIR_PAYLOAD pl;
+	NBioAPI_SINT32 time_out = -1; // 10000;
+	NBioAPI_FIR_HANDLE_PTR paudit_data = NULL;
+	NBioAPI_WINDOW_OPTION_PTR pwindow = NULL;
+
+	NBioAPI_FIR_HANDLE hFIR;
+	NBioAPI_FIR_TEXTENCODE hTextFIR;
+	memset(&hTextFIR, 0, sizeof(NBioAPI_FIR_TEXTENCODE));
+	fp_NBioAPI_GetTextFIRFromHandle(m_hBSP, hFIR, &hTextFIR, FALSE);
+
+	fp_NBioAPI_Verify(m_hBSP,piStoredTemplate,&res,&pl,time_out,paudit_data,pwindow);
+
+	return res;
 }
