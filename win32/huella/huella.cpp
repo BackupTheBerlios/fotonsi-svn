@@ -32,7 +32,7 @@ extern "C" __declspec(dllexport)NBioAPI_RETURN FotoNBioAPI_OpenDevice (NBioAPI_H
 extern "C" __declspec(dllexport)NBioAPI_RETURN FotoNBioAPI_CloseDevice    (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID);
 extern "C" __declspec(dllexport)NBioAPI_DEVICE_INFO_0* FotoNBioAPI_GetDeviceInfo  (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID);
 extern "C" __declspec(dllexport)const char* FotoNBioAPI_Enroll(NBioAPI_FIR_HANDLE hFIR, NBioAPI_FIR_PAYLOAD* payload);
-extern "C" __declspec(dllexport)BOOL FotoNBioAPI_Verify(NBioAPI_FIR_HANDLE hFIR, NBioAPI_INPUT_FIR_PTR piStoredTemplate);
+extern "C" __declspec(dllexport)BOOL FotoNBioAPI_Verify(const char* plantilla);
 
 // variables globales que vamos a usar
 static NBioAPI_HANDLE m_hBSP;
@@ -347,7 +347,7 @@ const char* FotoNBioAPI_Enroll(NBioAPI_FIR_HANDLE hFIR, NBioAPI_FIR_PAYLOAD* pay
 	fp_NBioAPI_FreeFIRHandle(m_hBSP,hFIR);
 }
 
-BOOL FotoNBioAPI_Verify(const char* Template)
+BOOL FotoNBioAPI_Verify(const char* plantilla)
 {
 	NBioAPI_BOOL res = FALSE;
 	NBioAPI_FIR_PAYLOAD pl;
@@ -355,12 +355,19 @@ BOOL FotoNBioAPI_Verify(const char* Template)
 	NBioAPI_FIR_HANDLE_PTR paudit_data = NULL;
 	NBioAPI_WINDOW_OPTION_PTR pwindow = NULL;
 
+	NBioAPI_INPUT_FIR input_fir;
+	NBioAPI_FIR_TEXTENCODE textFIR;
+	textFIR.IsWideChar = FALSE;
+	memset(&textFIR, 0, sizeof(NBioAPI_FIR_TEXTENCODE));
+	textFIR.TextFIR = strdup(plantilla);
+
 	NBioAPI_FIR_HANDLE hFIR;
-	NBioAPI_FIR_TEXTENCODE hTextFIR;
-	memset(&hTextFIR, 0, sizeof(NBioAPI_FIR_TEXTENCODE));
-	fp_NBioAPI_GetTextFIRFromHandle(m_hBSP, hFIR, &hTextFIR, FALSE);
+    input_fir.Form = NBioAPI_FIR_FORM_TEXTENCODE;
+    //input_fir.InputFIR.FIR = &textFIR;
+	// creo que es mas bien asi:
+	input_fir.InputFIR.TextFIR = (NBioAPI_FIR_TEXTENCODE_PTR) &textFIR;
 
-	fp_NBioAPI_Verify(m_hBSP,piStoredTemplate,&res,&pl,time_out,paudit_data,pwindow);
-
+	fp_NBioAPI_Verify(m_hBSP,&input_fir,&res,&pl,time_out,paudit_data,pwindow);
+	free(textFIR.TextFIR);
 	return res;
 }

@@ -29,6 +29,7 @@ typedef NBioAPI_RETURN (*fp_FotoNBioAPI_OpenDevice) (NBioAPI_HANDLE hHandle, NBi
 typedef NBioAPI_RETURN (*fp_FotoNBioAPI_CloseDevice) (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID);
 typedef NBioAPI_DEVICE_INFO_0* (*fp_FotoNBioAPI_GetDeviceInfo)  (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID);
 typedef const char* (*fp_FotoNBioAPI_Enroll)(NBioAPI_FIR_HANDLE hFIR, NBioAPI_FIR_PAYLOAD* payload);
+typedef BOOL (*fp_FotoNBioAPI_Verify) (const char* plantilla);
 
 // prueba_juan
 typedef NBioAPI_RETURN (*fp_NBioAPI_OpenDevice) (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID);
@@ -207,7 +208,19 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 		NBioAPI_FIR_HANDLE fh = NULL;
 		char* mierda;
 		mierda = (char*) FotoNBioAPI_Enroll(fh, NULL);
-		int a = lstrlen(mierda);
+
+		char resultado[1000];
+		memset(resultado,0,1000*sizeof(char));
+		strcpy(resultado,mierda);
+
+		// Get function pointer
+		fp_FotoNBioAPI_Verify FotoNBioAPI_Verify;
+		FotoNBioAPI_Verify = (fp_FotoNBioAPI_Verify) GetProcAddress(hinstLib, "FotoNBioAPI_Verify");
+		if (FotoNBioAPI_Verify == NULL) {
+				printf("ERROR: unable to find DLL function\n");
+				return 1;
+		}
+		BOOL validado = FotoNBioAPI_Verify(mierda);
 
 		// Get function pointer
 		fp_FotoNBioAPI_CloseDevice FotoNBioAPI_CloseDevice;
