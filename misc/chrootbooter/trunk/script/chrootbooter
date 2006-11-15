@@ -173,7 +173,7 @@ it from C</etc/hostname>.
 
 =cut
 
-our $VERSION = 0.351;
+our $VERSION = 0.36;
 
 use File::Copy qw(copy);
 use IO::Socket;
