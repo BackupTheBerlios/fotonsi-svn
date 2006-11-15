@@ -290,7 +290,7 @@ sub read_pre_config {
             $line =~ s/^#.*//o;
             $line =~ s/^\s+//o;
             $line =~ s/\s+$//o;
-            if ($line =~ /^(r?bind)\s+([\/a-zA-Z_]+)(\s+([\/a-zA-Z_]+))?$/) {
+            if ($line =~ /^(r?bind)\s+([\/a-zA-Z_.]+)(\s+([\/a-zA-Z_.]+))?$/) {
                 my ($option, $hostpath, $chrpath) = ($1, $2, $4);
                 $chrpath ||= $hostpath;
                 $config{$option}->{$hostpath} = $chrpath;
