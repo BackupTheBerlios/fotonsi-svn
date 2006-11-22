@@ -18,17 +18,17 @@ using namespace std;
 #include "NBioAPI_Type.h"
 #include "NBioAPI_CheckValidity.h"
 
-typedef unsigned long (*fp_FotoNBioAPI_Init) ();
+typedef void (*fp_FotoNBioAPI_Init) ();
 typedef NBioAPI_RETURN (*fp_FotoNBioAPI_CheckFinger) ();
 typedef NBioAPI_RETURN (*fp_FotoNBioAPI_Terminate)();
 typedef NBioAPI_RETURN (*fp_FotoNBioAPI_CheckValidity)();
 typedef int (*fp_FotoNBioAPI_InitLog) ();
 typedef int (*fp_FotoNBioAPI_ShutdownLog) ();
-typedef const char* (*fp_FotoNBioAPI_EnumerateDevice) (NBioAPI_HANDLE g_hBSP);
-typedef NBioAPI_RETURN (*fp_FotoNBioAPI_OpenDevice) (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID);
-typedef NBioAPI_RETURN (*fp_FotoNBioAPI_CloseDevice) (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID);
-typedef NBioAPI_DEVICE_INFO_0* (*fp_FotoNBioAPI_GetDeviceInfo)  (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID);
-typedef const char* (*fp_FotoNBioAPI_Enroll)(NBioAPI_FIR_HANDLE hFIR, NBioAPI_FIR_PAYLOAD* payload);
+typedef const char* (*fp_FotoNBioAPI_EnumerateDevice) ();
+typedef NBioAPI_RETURN (*fp_FotoNBioAPI_OpenDevice) (NBioAPI_DEVICE_ID nDeviceID);
+typedef NBioAPI_RETURN (*fp_FotoNBioAPI_CloseDevice) (NBioAPI_DEVICE_ID nDeviceID);
+typedef NBioAPI_DEVICE_INFO_0* (*fp_FotoNBioAPI_GetDeviceInfo)  (NBioAPI_DEVICE_ID nDeviceID);
+typedef const char* (*fp_FotoNBioAPI_Enroll)();
 typedef BOOL (*fp_FotoNBioAPI_Verify) (const char* plantilla);
 
 // prueba_juan
@@ -95,7 +95,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 				printf("ERROR: unable to find DLL function\n");
 				return 1;
 		}
-		dll_handle = (unsigned long) FotoNBioAPI_Init();
+		FotoNBioAPI_Init();
 
 		/*
 		// prueba_juan
@@ -141,7 +141,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 				printf("ERROR: unable to find DLL function\n");
 				return 1;
 		}
-		cout << "Found devices: " << FotoNBioAPI_EnumerateDevice(dll_handle) << "\n";
+		cout << "Found devices: " << FotoNBioAPI_EnumerateDevice() << "\n";
 		
 		// Get function pointer
 		fp_FotoNBioAPI_OpenDevice FotoNBioAPI_OpenDevice;
@@ -150,7 +150,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 				printf("ERROR: unable to find DLL function\n");
 				return 1;
 		}
-		if (FotoNBioAPI_OpenDevice(dll_handle,NBioAPI_DEVICE_NAME_FDU01)==NBioAPIERROR_NONE)
+		if (FotoNBioAPI_OpenDevice(NBioAPI_DEVICE_NAME_FDU01)==NBioAPIERROR_NONE)
 			cout << "Device initialized\n";
 		else
 			cout << "Device could not be initialized!\n";
@@ -164,7 +164,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 		}
 		
 		NBioAPI_DEVICE_INFO_0* Device_info0 = NULL;
-		Device_info0 = FotoNBioAPI_GetDeviceInfo(dll_handle,NBioAPI_DEVICE_NAME_FDU01);
+		Device_info0 = FotoNBioAPI_GetDeviceInfo(NBioAPI_DEVICE_NAME_FDU01);
 
 		// Get function pointer
 		fp_FotoNBioAPI_CheckFinger FotoNBioAPI_CheckFinger;
@@ -205,9 +205,8 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 				printf("ERROR: unable to find DLL function\n");
 				return 1;
 		}
-		NBioAPI_FIR_HANDLE fh = NULL;
 		char* mierda;
-		mierda = (char*) FotoNBioAPI_Enroll(fh, NULL);
+		mierda = (char*) FotoNBioAPI_Enroll();
 
 		char resultado[1000];
 		memset(resultado,0,1000*sizeof(char));
@@ -229,7 +228,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 				printf("ERROR: unable to find DLL function\n");
 				return 1;
 		}
-		if (FotoNBioAPI_CloseDevice(dll_handle,NBioAPI_DEVICE_NAME_FDU01)==NBioAPIERROR_NONE)
+		if (FotoNBioAPI_CloseDevice(NBioAPI_DEVICE_NAME_FDU01)==NBioAPIERROR_NONE)
 			cout << "Device closed\n";
 		else
 			cout << "Device could not be closed!\n";
