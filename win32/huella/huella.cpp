@@ -32,7 +32,9 @@ extern "C" __declspec(dllexport)NBioAPI_RETURN FotoNBioAPI_OpenDevice (NBioAPI_D
 extern "C" __declspec(dllexport)NBioAPI_RETURN FotoNBioAPI_CloseDevice    (NBioAPI_DEVICE_ID nDeviceID);
 extern "C" __declspec(dllexport)NBioAPI_DEVICE_INFO_0* FotoNBioAPI_GetDeviceInfo  (NBioAPI_DEVICE_ID nDeviceID);
 extern "C" __declspec(dllexport)const char* FotoNBioAPI_Enroll();
+extern "C" __declspec(dllexport)const char* FotoNBioAPI_Capture();
 extern "C" __declspec(dllexport)BOOL FotoNBioAPI_Verify(const char* plantilla);
+extern "C" __declspec(dllexport)BOOL FotoNBioAPI_VerifyMatch(const char* plantilla, const char* huella);
 
 // variables globales que vamos a usar
 static NBioAPI_HANDLE m_hBSP;
@@ -355,11 +357,70 @@ BOOL FotoNBioAPI_Verify(const char* plantilla)
 	memset(&textFIR, 0, sizeof(NBioAPI_FIR_TEXTENCODE));
 	textFIR.TextFIR = strdup(plantilla);
 
-	NBioAPI_FIR_HANDLE hFIR;
+	//NBioAPI_FIR_HANDLE hFIR;
     input_fir.Form = NBioAPI_FIR_FORM_TEXTENCODE;
 	input_fir.InputFIR.TextFIR = (NBioAPI_FIR_TEXTENCODE_PTR) &textFIR;
 
 	fp_NBioAPI_Verify(m_hBSP,&input_fir,&res,&pl,time_out,paudit_data,pwindow);
+	free(textFIR.TextFIR);
+	return res;
+}
+
+const char* FotoNBioAPI_Capture()
+{
+	NBioAPI_FIR_HANDLE hFIR = NULL;
+	NBioAPI_FIR_PAYLOAD* payload = NULL;
+	NBioAPI_RETURN err;
+	NBioAPI_INPUT_FIR_PTR pstored_template = NULL;
+	NBioAPI_SINT32 time_out = -1; // 10000;
+	NBioAPI_FIR_HANDLE_PTR paudit_data = NULL;
+	NBioAPI_WINDOW_OPTION_PTR pwindow = NULL;
+   
+	err = fp_NBioAPI_Capture(m_hBSP, NBioAPI_FIR_PURPOSE_IDENTIFY, &hFIR, time_out, NULL, NULL);
+
+	if (err==NBioAPIERROR_NONE)
+	{
+		NBioAPI_FIR_TEXTENCODE hTextFIR;
+		memset(&hTextFIR, 0, sizeof(NBioAPI_FIR_TEXTENCODE));
+		fp_NBioAPI_GetTextFIRFromHandle(m_hBSP, hFIR, &hTextFIR, FALSE); //extended??
+		strcpy(cadena,hTextFIR.TextFIR);
+		fp_NBioAPI_FreeTextFIR(m_hBSP, &hTextFIR);
+		return (const char*) cadena;
+	}
+	else return "ERROR";
+
+	fp_NBioAPI_FreeFIRHandle(m_hBSP,hFIR);
+}
+
+BOOL FotoNBioAPI_VerifyMatch(const char* plantilla, const char* huella)
+{
+	NBioAPI_BOOL res = FALSE;
+	NBioAPI_FIR_PAYLOAD pl;
+	NBioAPI_SINT32 time_out = -1; // 10000;
+	NBioAPI_FIR_HANDLE_PTR paudit_data = NULL;
+	NBioAPI_WINDOW_OPTION_PTR pwindow = NULL;
+
+	NBioAPI_INPUT_FIR input_fir;
+	NBioAPI_FIR_TEXTENCODE textFIR;
+	textFIR.IsWideChar = FALSE;
+	memset(&textFIR, 0, sizeof(NBioAPI_FIR_TEXTENCODE));
+	textFIR.TextFIR = strdup(huella);
+
+	//NBioAPI_FIR_HANDLE hFIR;
+    input_fir.Form = NBioAPI_FIR_FORM_TEXTENCODE;
+	input_fir.InputFIR.TextFIR = (NBioAPI_FIR_TEXTENCODE_PTR) &textFIR;
+
+	NBioAPI_INPUT_FIR stored_fir;
+	NBioAPI_FIR_TEXTENCODE s_textFIR;
+	s_textFIR.IsWideChar = FALSE;
+	memset(&s_textFIR, 0, sizeof(NBioAPI_FIR_TEXTENCODE));
+	s_textFIR.TextFIR = strdup(plantilla);
+
+	//NBioAPI_FIR_HANDLE hFIR;
+    stored_fir.Form = NBioAPI_FIR_FORM_TEXTENCODE;
+	stored_fir.InputFIR.TextFIR = (NBioAPI_FIR_TEXTENCODE_PTR) &s_textFIR;
+
+	fp_NBioAPI_VerifyMatch(m_hBSP,&input_fir,&stored_fir,&res,&pl);
 	free(textFIR.TextFIR);
 	return res;
 }

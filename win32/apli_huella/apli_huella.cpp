@@ -29,7 +29,9 @@ typedef NBioAPI_RETURN (*fp_FotoNBioAPI_OpenDevice) (NBioAPI_DEVICE_ID nDeviceID
 typedef NBioAPI_RETURN (*fp_FotoNBioAPI_CloseDevice) (NBioAPI_DEVICE_ID nDeviceID);
 typedef NBioAPI_DEVICE_INFO_0* (*fp_FotoNBioAPI_GetDeviceInfo)  (NBioAPI_DEVICE_ID nDeviceID);
 typedef const char* (*fp_FotoNBioAPI_Enroll)();
+typedef const char* (*fp_FotoNBioAPI_Capture)();
 typedef BOOL (*fp_FotoNBioAPI_Verify) (const char* plantilla);
+typedef BOOL (*fp_FotoNBioAPI_VerifyMatch) (const char* plantilla, const char* huella);
 
 // prueba_juan
 typedef NBioAPI_RETURN (*fp_NBioAPI_OpenDevice) (NBioAPI_HANDLE hHandle, NBioAPI_DEVICE_ID nDeviceID);
@@ -37,10 +39,10 @@ typedef NBioAPI_RETURN (*fp_NBioAPI_OpenDevice) (NBioAPI_HANDLE hHandle, NBioAPI
 int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
 	int nRetCode = 0;
-	unsigned long dll_handle;
+	//unsigned long dll_handle;
 
 	int nRetCode2 = 0;
-	unsigned long dll_handle2;
+	//unsigned long dll_handle2;
 
 	// initialize MFC and print and error on failure
 	if (!AfxWinInit(::GetModuleHandle(NULL), NULL, ::GetCommandLine(), 0))
@@ -208,9 +210,31 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 		char* mierda;
 		mierda = (char*) FotoNBioAPI_Enroll();
 
-		char resultado[1000];
-		memset(resultado,0,1000*sizeof(char));
-		strcpy(resultado,mierda);
+		char plantilla[1000];
+		memset(plantilla,0,1000*sizeof(char));
+		strcpy(plantilla,mierda);
+
+		// Get function pointer
+		fp_FotoNBioAPI_Capture FotoNBioAPI_Capture;
+		FotoNBioAPI_Capture = (fp_FotoNBioAPI_Capture) GetProcAddress(hinstLib, "FotoNBioAPI_Capture");
+		if (FotoNBioAPI_Capture == NULL) {
+				printf("ERROR: unable to find DLL function\n");
+				return 1;
+		}
+
+		mierda = (char*) FotoNBioAPI_Capture();
+		char huella[1000];
+		memset(huella,0,1000*sizeof(char));
+		strcpy(huella,mierda);
+
+		// Get function pointer
+		fp_FotoNBioAPI_VerifyMatch FotoNBioAPI_VerifyMatch;
+		FotoNBioAPI_VerifyMatch = (fp_FotoNBioAPI_VerifyMatch) GetProcAddress(hinstLib, "FotoNBioAPI_VerifyMatch");
+		if (FotoNBioAPI_VerifyMatch == NULL) {
+				printf("ERROR: unable to find DLL function\n");
+				return 1;
+		}
+		BOOL validado = FotoNBioAPI_VerifyMatch(plantilla, huella);
 
 		// Get function pointer
 		fp_FotoNBioAPI_Verify FotoNBioAPI_Verify;
@@ -219,7 +243,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 				printf("ERROR: unable to find DLL function\n");
 				return 1;
 		}
-		BOOL validado = FotoNBioAPI_Verify(mierda);
+		validado = FotoNBioAPI_Verify(mierda);
 
 		// Get function pointer
 		fp_FotoNBioAPI_CloseDevice FotoNBioAPI_CloseDevice;
