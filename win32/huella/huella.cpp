@@ -138,9 +138,7 @@ void FotoNBioAPI_Init()
 	//FotoNBioAPI_InitLog();
 	debug_message("FotoNBioAPI_Init called\n");
 	//FotoNBioAPI_ShutdownLog();
-	//return 5;
 
-	//return 1;
 	HINSTANCE m_hLib;
 
 	m_hLib = 0;
@@ -334,11 +332,6 @@ const char* FotoNBioAPI_Enroll()
 		NBioAPI_FIR_TEXTENCODE hTextFIR;
 		memset(&hTextFIR, 0, sizeof(NBioAPI_FIR_TEXTENCODE));
 		fp_NBioAPI_GetTextFIRFromHandle(m_hBSP, hFIR, &hTextFIR, FALSE); //extended??
-		//fp_NBioAPI_GetExtendedTextFIRFromHandle(m_hBSP, hFIR, &hTextFIR, FALSE, m_nFIRFormat);
-		//DWORD dwLen = lstrlen(hTextFIR.TextFIR)+1;
-		//memcpy(&cadena,hTextFIR.TextFIR,dwLen);
-		//fwrite(&dwLen, 1, sizeof(DWORD), fp);
-		//fwrite(hTextFIR.TextFIR, 1, dwLen, fp);
 		strcpy(cadena,hTextFIR.TextFIR);
 		fp_NBioAPI_FreeTextFIR(m_hBSP, &hTextFIR);
 		return (const char*) cadena;
@@ -364,8 +357,6 @@ BOOL FotoNBioAPI_Verify(const char* plantilla)
 
 	NBioAPI_FIR_HANDLE hFIR;
     input_fir.Form = NBioAPI_FIR_FORM_TEXTENCODE;
-    //input_fir.InputFIR.FIR = &textFIR;
-	// creo que es mas bien asi:
 	input_fir.InputFIR.TextFIR = (NBioAPI_FIR_TEXTENCODE_PTR) &textFIR;
 
 	fp_NBioAPI_Verify(m_hBSP,&input_fir,&res,&pl,time_out,paudit_data,pwindow);
