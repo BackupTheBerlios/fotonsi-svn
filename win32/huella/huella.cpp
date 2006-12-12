@@ -31,7 +31,7 @@ extern "C" __declspec(dllexport) const char* FotoNBioAPI_EnumerateDevice();
 extern "C" __declspec(dllexport)NBioAPI_RETURN FotoNBioAPI_OpenDevice (NBioAPI_DEVICE_ID nDeviceID);
 extern "C" __declspec(dllexport)NBioAPI_RETURN FotoNBioAPI_CloseDevice    (NBioAPI_DEVICE_ID nDeviceID);
 extern "C" __declspec(dllexport)NBioAPI_DEVICE_INFO_0* FotoNBioAPI_GetDeviceInfo  (NBioAPI_DEVICE_ID nDeviceID);
-extern "C" __declspec(dllexport)const char* FotoNBioAPI_Enroll();
+extern "C" __declspec(dllexport)const char* FotoNBioAPI_Enroll(NBioAPI_UINT8 DisableFingerForEnroll[10], const char* CaptionMsg, const char* CancelMsg);
 extern "C" __declspec(dllexport)const char* FotoNBioAPI_Capture();
 extern "C" __declspec(dllexport)BOOL FotoNBioAPI_Verify(const char* plantilla);
 extern "C" __declspec(dllexport)BOOL FotoNBioAPI_VerifyMatch(const char* plantilla, const char* huella);
@@ -317,7 +317,7 @@ NBioAPI_RETURN FotoNBioAPI_FreeTextFIR(NBioAPI_FIR_TEXTENCODE_PTR pTextFIR)
 	return fp_NBioAPI_FreeTextFIR(m_hBSP,pTextFIR);
 }
 
-const char* FotoNBioAPI_Enroll()
+const char* FotoNBioAPI_Enroll(NBioAPI_UINT8 DisableFingerForEnroll[10], const char* CaptionMsg, const char* CancelMsg)
 {
 	NBioAPI_FIR_HANDLE hFIR = NULL;
 	NBioAPI_FIR_PAYLOAD* payload = NULL;
@@ -325,10 +325,36 @@ const char* FotoNBioAPI_Enroll()
 	NBioAPI_INPUT_FIR_PTR pstored_template = NULL;
 	NBioAPI_SINT32 time_out = -1; // 10000;
 	NBioAPI_FIR_HANDLE_PTR paudit_data = NULL;
-	NBioAPI_WINDOW_OPTION_PTR pwindow = NULL;
-   
-	err = fp_NBioAPI_Enroll(m_hBSP, NULL, &hFIR, payload, time_out, NULL, NULL);
 
+	NBioAPI_WINDOW_OPTION   m_WinOption;
+	NBioAPI_WINDOW_OPTION_2 m_WinOption2;
+	TCHAR                   m_szCaptionMsg[256];
+	TCHAR                   m_szCancelMsg[256];
+
+    memset(&m_WinOption, 0, sizeof(NBioAPI_WINDOW_OPTION));
+	m_WinOption.Length = sizeof(NBioAPI_WINDOW_OPTION);
+
+	m_WinOption.CaptionMsg = LPTSTR (CaptionMsg);
+	m_WinOption.CancelMsg = LPTSTR (CancelMsg);
+	m_WinOption.FingerWnd = NULL;
+	m_WinOption.WindowStyle = NBioAPI_WINDOW_STYLE_POPUP;
+	//m_WinOption.WindowStyle = NBioAPI_WINDOW_STYLE_INVISIBLE;
+	//m_WinOption.WindowStyle = NBioAPI_WINDOW_STYLE_CONTINUOUS;
+
+	//m_WinOption.WindowStyle |= NBioAPI_WINDOW_STYLE_NO_FPIMG;
+	//m_WinOption.WindowStyle |= NBioAPI_WINDOW_STYLE_NO_TOPMOST;
+	m_WinOption.WindowStyle |= NBioAPI_WINDOW_STYLE_NO_WELCOME;
+
+	memset(&m_WinOption2, 0, sizeof(m_WinOption2));
+	memcpy(m_WinOption2.DisableFingerForEnroll,DisableFingerForEnroll,10*sizeof(NBioAPI_UINT8));
+	//memcpy(m_WinOption2.FPForeColor,FPForeColor,3*sizeof(NBioAPI_UINT8));
+	//memcpy(m_WinOption2.FPBackColor,FPBackColor,3*sizeof(NBioAPI_UINT8));
+	m_WinOption.Option2 = &m_WinOption2;
+
+	err = fp_NBioAPI_Enroll(m_hBSP, NULL, &hFIR, payload, time_out, NULL, &m_WinOption);
+	//err = fp_NBioAPI_Enroll(m_hBSP, NULL, &hFIR, payload, time_out, NULL, NULL);
+
+/*
 	if (err==NBioAPIERROR_NONE)
 	{
 		NBioAPI_FIR_TEXTENCODE hTextFIR;
@@ -338,9 +364,41 @@ const char* FotoNBioAPI_Enroll()
 		fp_NBioAPI_FreeTextFIR(m_hBSP, &hTextFIR);
 		return (const char*) cadena;
 	}
-	else return "ERROR";
-
-	fp_NBioAPI_FreeFIRHandle(m_hBSP,hFIR);
+*/
+	switch (err) {
+		case NBioAPIERROR_NONE:
+			NBioAPI_FIR_TEXTENCODE hTextFIR;
+			memset(&hTextFIR, 0, sizeof(NBioAPI_FIR_TEXTENCODE));
+			fp_NBioAPI_GetTextFIRFromHandle(m_hBSP, hFIR, &hTextFIR, FALSE); //extended??
+			strcpy(cadena,hTextFIR.TextFIR);
+			fp_NBioAPI_FreeTextFIR(m_hBSP, &hTextFIR);
+			fp_NBioAPI_FreeFIRHandle(m_hBSP,hFIR);
+			return (const char*) cadena;
+		case NBioAPIERROR_INVALID_HANDLE:
+			fp_NBioAPI_FreeFIRHandle(m_hBSP,hFIR);
+			return "NBioAPIERROR_INVALID_HANDLE";
+		case NBioAPIERROR_INVALID_POINTER:
+			fp_NBioAPI_FreeFIRHandle(m_hBSP,hFIR);
+			return "NBioAPIERROR_INVALID_POINTER";
+		case NBioAPIERROR_DEVICE_NOT_OPENED:
+			fp_NBioAPI_FreeFIRHandle(m_hBSP,hFIR);
+			return "NBioAPIERROR_DEVICE_NOT_OPENED";
+		case NBioAPIERROR_ENCRYPTED_DATA_ERROR:
+			fp_NBioAPI_FreeFIRHandle(m_hBSP,hFIR);
+			return "NBioAPIERROR_ENCRYPTED_DATA_ERROR";
+		case NBioAPIERROR_INTERNAL_CHECKSUM_FAIL:
+			fp_NBioAPI_FreeFIRHandle(m_hBSP,hFIR);
+			return "NBioAPIERROR_INTERNAL_CHECKSUM_FAIL";
+		case NBioAPIERROR_FUNCTION_FAIL:
+			fp_NBioAPI_FreeFIRHandle(m_hBSP,hFIR);
+			return "NBioAPIERROR_FUNCTION_FAIL";
+		case NBioAPIERROR_USER_CANCEL:
+			fp_NBioAPI_FreeFIRHandle(m_hBSP,hFIR);
+			return "NBioAPIERROR_USER_CANCEL";
+		default:
+			fp_NBioAPI_FreeFIRHandle(m_hBSP,hFIR);
+			return "Unknown Error";
+		}
 }
 
 BOOL FotoNBioAPI_Verify(const char* plantilla)
