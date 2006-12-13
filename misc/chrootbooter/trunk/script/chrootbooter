@@ -9,9 +9,10 @@ chrootbooter - Script to "boot" chroots
 =head1 SYNOPSIS
 
  chrootbooter start
- chrootbooter start some_chroot
+ chrootbooter -q start some_chroot
  chrootbooter stop /srv/chroots/some_chroot
- chrootbooter -d /src/more_chroots stop some_chroot
+ chrootbooter -n stop
+ chrootbooter -d /srv/more_chroots stop some_chroot
 
 =head1 CALLING CONVENTION
 
@@ -259,12 +260,13 @@ sub get_init_scripts {
 sub normalize_chroots {
     my ($chroot_repo, @chroot_list) = @_;
 
-    # Ignore non-directory entries
-    grep { if (-d $_) {
+    # Ignore non-directory entries and directories which don't have /etc/chrb
+    # inside them
+    grep { if (-d $_ and -d "$_/etc/chrb") {
 	       1
 	   }
 	   else {
-    	       print_warning("Warning: skipping '$_': not a directory\n");
+    	       print_warning("Warning: skipping '$_': not a directory or doesn't have /etc/chrb\n");
 	       0
 	   }
 	 }
@@ -454,7 +456,7 @@ foreach my $chroot (@chroots) {
         }
     }
     else {
-        print_warning("WARNING: chroot $chroot doesn't have a configuration directory\n") unless $options{q};
+        print_warning("WARNING: chroot $chroot doesn't have a configuration directory??\n");
     }
 
     # Pre-tasks (configuration-driven)

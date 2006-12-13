@@ -1,0 +1,4 @@
+0.40
+----
+
+* Ignore directories which don't have /etc/chrb inside them
