@@ -1,5 +1,6 @@
 chrb-pre.conf-sample
 chrootbooter.ini-sample
+chrootbooter-sample
 libchrb/chrb.c
 libchrb/Makefile
 LICENSE
