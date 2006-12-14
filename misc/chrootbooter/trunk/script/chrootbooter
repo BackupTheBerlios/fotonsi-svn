@@ -524,8 +524,8 @@ foreach my $chroot (@chroots) {
     if (ref $chroot_conf and $action eq 'start' and !$options{n}) {
         foreach my $dir_info (bind_dirs($chroot, $chroot_conf)) {
             my $ret = ensure_bound(@$dir_info);
-            if ($ret and !$options{q}) {
-                print_warning("Skipping already bound directory $dir_info->[1]\n");
+            if ($ret) {
+                print_warning("Skipping already bound directory $dir_info->[1]\n", quiet => $options{q});
             }
         }
 
@@ -535,8 +535,7 @@ foreach my $chroot (@chroots) {
             # Also copy it if the host one is newer (see else block below)
             if (! -r "$chroot/$preload") {
                 if (-r $preload) {
-                    print_warning("Copying $preload to $chroot\n")
-                            unless $options{q};
+                    print_warning("Copying $preload to $chroot\n", quiet => $options{q});
                     copy $preload, "$chroot/$preload";
                 }
                 else {
@@ -614,8 +613,9 @@ foreach my $chroot (@chroots) {
     if (ref $chroot_conf and $action eq 'stop' and !$options{n}) {
         foreach my $dir_info (bind_dirs($chroot, $chroot_conf)) {
             my $ret = unbind($dir_info->[1]);
-            if (! $ret and !$options{q}) {
-                print_warning("Couldn't unbind directory $dir_info->[1]\n");
+            if (! $ret) {
+                print_warning("Couldn't unbind directory $dir_info->[1]\n",
+                              quiet => $options{q});
             }
         }
 
@@ -641,8 +641,8 @@ foreach my $chroot (@chroots) {
                 }
             }
 
-            if (!$found && !$options{q}) {
-                print_info(" failure.\n");
+            if (!$found) {
+                print_info(" failure.\n", quiet => $options{q});
                 print_warning("Couldn't bring down interface alias for $chroot_conf->{ip}: not found\n");
             }
         }
