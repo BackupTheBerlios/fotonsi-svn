@@ -2,3 +2,4 @@
 ----
 
 * Ignore directories which don't have /etc/chrb inside them
+* Only try to setup network interface alias for valid chroot IPs
