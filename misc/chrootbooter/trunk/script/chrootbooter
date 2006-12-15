@@ -176,7 +176,7 @@ it from C</etc/hostname>.
 
 =cut
 
-our $VERSION = 0.40;
+our $VERSION = 0.401;
 
 use File::Copy qw(copy);
 use IO::Socket;
