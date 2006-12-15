@@ -23,6 +23,7 @@ WriteMakefile(
                               'Config::Tiny' => 1,
                               'IO::Interface' => 0.98,
                               'Term::ANSIColor' => 1.10,
+                              'Log::LogLite' => 0.82,
                            },
     'EXE_FILES'         => ['script/chrootbooter'],
     ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
