@@ -176,7 +176,7 @@ it from C</etc/hostname>.
 
 =cut
 
-our $VERSION = 0.36;
+our $VERSION = 0.40;
 
 use File::Copy qw(copy);
 use IO::Socket;
@@ -250,7 +250,7 @@ EOUSAGE
 # Returns true if the given (absolute path) chroot is valid
 sub valid_chroot {
     my ($chroot_dir) = @_;
-    (-d $_ and -d "$_/etc/chrb");
+    (-d $chroot_dir and -d "$chroot_dir/etc/chrb");
 }
 
 # Returns true if the given IP is valid
