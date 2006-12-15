@@ -28,7 +28,7 @@ typedef const char* (*fp_FotoNBioAPI_EnumerateDevice) ();
 typedef NBioAPI_RETURN (*fp_FotoNBioAPI_OpenDevice) (NBioAPI_DEVICE_ID nDeviceID);
 typedef NBioAPI_RETURN (*fp_FotoNBioAPI_CloseDevice) (NBioAPI_DEVICE_ID nDeviceID);
 typedef NBioAPI_DEVICE_INFO_0* (*fp_FotoNBioAPI_GetDeviceInfo)  (NBioAPI_DEVICE_ID nDeviceID);
-typedef const char* (*fp_FotoNBioAPI_Enroll)(NBioAPI_UINT8 DisableFingerForEnroll[10], const char* CaptionMsg, const char* CancelMsg);
+typedef const char* (*fp_FotoNBioAPI_Enroll)(const char* CaptionMsg, const char* CancelMsg, NBioAPI_UINT8 right_thumb, NBioAPI_UINT8 right_index, NBioAPI_UINT8 right_middle, NBioAPI_UINT8 right_ring, NBioAPI_UINT8 right_little, NBioAPI_UINT8 left_thumb, NBioAPI_UINT8 left_index, NBioAPI_UINT8 left_middle, NBioAPI_UINT8 left_ring, NBioAPI_UINT8 left_little);
 typedef const char* (*fp_FotoNBioAPI_Capture)();
 typedef BOOL (*fp_FotoNBioAPI_Verify) (const char* plantilla);
 typedef BOOL (*fp_FotoNBioAPI_VerifyMatch) (const char* plantilla, const char* huella);
@@ -208,9 +208,8 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 				return 1;
 		}
 		char* mierda;
-		NBioAPI_UINT8 DisableFingerForEnroll[10] = {0,1,0,1,0,1,0,1,0,1};
 
-		mierda = (char*) FotoNBioAPI_Enroll(DisableFingerForEnroll,"Cancelar","¿Está seguro de que desea cancelar la operación?");
+		mierda = (char*) FotoNBioAPI_Enroll("Cancelar","¿Está seguro de que desea cancelar la operación?",1,0,1,1,1,1,0,1,1,1);
 
 		char plantilla[1000];
 		memset(plantilla,0,1000*sizeof(char));

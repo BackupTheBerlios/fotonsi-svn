@@ -31,7 +31,7 @@ extern "C" __declspec(dllexport) const char* FotoNBioAPI_EnumerateDevice();
 extern "C" __declspec(dllexport)NBioAPI_RETURN FotoNBioAPI_OpenDevice (NBioAPI_DEVICE_ID nDeviceID);
 extern "C" __declspec(dllexport)NBioAPI_RETURN FotoNBioAPI_CloseDevice    (NBioAPI_DEVICE_ID nDeviceID);
 extern "C" __declspec(dllexport)NBioAPI_DEVICE_INFO_0* FotoNBioAPI_GetDeviceInfo  (NBioAPI_DEVICE_ID nDeviceID);
-extern "C" __declspec(dllexport)const char* FotoNBioAPI_Enroll(NBioAPI_UINT8 DisableFingerForEnroll[10], const char* CaptionMsg, const char* CancelMsg);
+extern "C" __declspec(dllexport)const char* FotoNBioAPI_Enroll(const char* CaptionMsg, const char* CancelMsg, NBioAPI_UINT8 right_thumb, NBioAPI_UINT8 right_index, NBioAPI_UINT8 right_middle, NBioAPI_UINT8 right_ring, NBioAPI_UINT8 right_little, NBioAPI_UINT8 left_thumb, NBioAPI_UINT8 left_index, NBioAPI_UINT8 left_middle, NBioAPI_UINT8 left_ring, NBioAPI_UINT8 left_little);
 extern "C" __declspec(dllexport)const char* FotoNBioAPI_Capture();
 extern "C" __declspec(dllexport)BOOL FotoNBioAPI_Verify(const char* plantilla);
 extern "C" __declspec(dllexport)BOOL FotoNBioAPI_VerifyMatch(const char* plantilla, const char* huella);
@@ -317,7 +317,7 @@ NBioAPI_RETURN FotoNBioAPI_FreeTextFIR(NBioAPI_FIR_TEXTENCODE_PTR pTextFIR)
 	return fp_NBioAPI_FreeTextFIR(m_hBSP,pTextFIR);
 }
 
-const char* FotoNBioAPI_Enroll(NBioAPI_UINT8 DisableFingerForEnroll[10], const char* CaptionMsg, const char* CancelMsg)
+const char* FotoNBioAPI_Enroll(const char* CaptionMsg, const char* CancelMsg, NBioAPI_UINT8 right_thumb, NBioAPI_UINT8 right_index, NBioAPI_UINT8 right_middle, NBioAPI_UINT8 right_ring, NBioAPI_UINT8 right_little, NBioAPI_UINT8 left_thumb, NBioAPI_UINT8 left_index, NBioAPI_UINT8 left_middle, NBioAPI_UINT8 left_ring, NBioAPI_UINT8 left_little)
 {
 	NBioAPI_FIR_HANDLE hFIR = NULL;
 	NBioAPI_FIR_PAYLOAD* payload = NULL;
@@ -346,7 +346,17 @@ const char* FotoNBioAPI_Enroll(NBioAPI_UINT8 DisableFingerForEnroll[10], const c
 	m_WinOption.WindowStyle |= NBioAPI_WINDOW_STYLE_NO_WELCOME;
 
 	memset(&m_WinOption2, 0, sizeof(m_WinOption2));
-	memcpy(m_WinOption2.DisableFingerForEnroll,DisableFingerForEnroll,10*sizeof(NBioAPI_UINT8));
+	//memcpy(m_WinOption2.DisableFingerForEnroll,DisableFingerForEnroll,10*sizeof(NBioAPI_UINT8));
+	m_WinOption2.DisableFingerForEnroll[0] = right_thumb;
+	m_WinOption2.DisableFingerForEnroll[1] = right_index;
+	m_WinOption2.DisableFingerForEnroll[2] = right_middle;
+	m_WinOption2.DisableFingerForEnroll[3] = right_ring;
+	m_WinOption2.DisableFingerForEnroll[4] = right_little;
+	m_WinOption2.DisableFingerForEnroll[5] = left_thumb;
+	m_WinOption2.DisableFingerForEnroll[6] = left_index;
+	m_WinOption2.DisableFingerForEnroll[7] = left_middle;
+	m_WinOption2.DisableFingerForEnroll[8] = left_ring;
+	m_WinOption2.DisableFingerForEnroll[9] = left_little;
 	//memcpy(m_WinOption2.FPForeColor,FPForeColor,3*sizeof(NBioAPI_UINT8));
 	//memcpy(m_WinOption2.FPBackColor,FPBackColor,3*sizeof(NBioAPI_UINT8));
 	m_WinOption.Option2 = &m_WinOption2;
