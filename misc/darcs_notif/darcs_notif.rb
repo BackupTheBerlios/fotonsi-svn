@@ -2,6 +2,8 @@
 
 require 'net/smtp'
 
+EMAILS = %w(eduardo@foton.es zoso@foton.es mvazquez@foton.es doc@foton.es tolo@foton.es jarbelo@foton.es ialiende@foton.es rdale@foton.es ancor@foton.es knut@foton.es ivan@foton.es wage@foton.es setepo@gmail.com alberto@foton.es)
+
 Dir["*"].each {|basedir|
     next unless File.directory?(basedir + "/_darcs")
 
@@ -27,12 +29,12 @@ Dir["*"].each {|basedir|
                 msg = ''
 
                 msg << "From: #{author}\n"
-                msg << "To: tecnicos@foton.es\n"
+                msg << "To: #{EMAILS.join(",")}\n"
                 msg << "Subject: [darcs fotón] [#{basedir}] #{name}\n"
                 msg << "\n\n"
                 msg << patch
 
-                smtp.send_message msg, author, 'tecnicos@foton.es'
+                smtp.send_message msg, author, *EMAILS
             end
 
         }
