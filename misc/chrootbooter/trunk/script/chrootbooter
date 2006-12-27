@@ -605,7 +605,7 @@ foreach my $chroot (@chroots) {
     @init_scripts || print_warning("Can't find any init script in init level $init_level in $chroot\n");
     foreach my $init_script (@init_scripts) {
         print_info("Executing $init_script in chroot $chroot...\n", quiet => !$options{v});
-        my $output;
+        my $output = "";
         $output = `$chroot_cmd $chroot $init_script $action 2>&1` unless $options{n};
         print_info($output, log => 6, chroot_output => 1, quiet => $options{q});
     }
