@@ -1,3 +1,4 @@
+* Add missing Log::LogLite dependency in Makefile.PL
 * Fix warning when using the -n switch
 
 0.40
