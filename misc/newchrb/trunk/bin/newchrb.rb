@@ -84,9 +84,24 @@ class NewChrbApp < CommandLine::Application
             say("ABORTING.")
         else
             say("done.")
-            say("Your new chrb is now in #{chrb_dir}.")
+            if not attrs[:chrb_image] then
+                say("Your new chrb is now in #{chrb_dir}.")
+            else
+                say("Compressing #{chrb_dir}...")
+                require 'pathname'
+                cmd ="tar zcf #{attrs[:chrb_name].tar.gz} #{chrb_dir}"
+                output = `#{cmd} 2>&1`
+                if $?.exitstatus !=0
+                    raise PackError, "tar exited with an error: #{cmd}: #{output}"
+                end
+                say("Wiping #{chrb_dir}... ")
+                FileUtils.rm_rf chrb_dir
+            end
         end
     rescue Interrupt
+        exit(1)
+    rescue PackError => e
+        puts e
         exit(1)
     rescue => e
         puts e

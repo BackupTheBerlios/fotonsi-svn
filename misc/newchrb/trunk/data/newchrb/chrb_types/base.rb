@@ -235,5 +235,6 @@ module ChrbTypes
 
         # Base properties
         property        :chrb_name, :description => 'Hostname for the new chrb?'
+        property        :chrb_image, :description => 'Generate compressed image instead of directory?', :default => "n", :type => :boolean
     end
 end
