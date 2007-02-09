@@ -80,8 +80,8 @@ module Fosc
                     # And then, indexes
                     t.attributes.each do |a|
                         next unless a.name == 'index'
-                        index_name = a.props['name']
                         field_names = a.props['columns']
+                        index_name = a.props['name'] || "index_#{t.name}_#{field_names.tr(",", "_")}"
                         unique = a.props.has_key?('unique') ? 'UNIQUE ' : ''
                         structure << "CREATE #{unique}INDEX #{index_name} ON #{t.name} ( #{field_names} );"
                         index_name.nil? or index_name == '' and $stderr.puts "Error: Índice sin nombre en la tabla #{t.name}"
