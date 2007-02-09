@@ -19,6 +19,13 @@ module Fosc
                 puts "--- #{generation_timestamp}"
                 foreign_keys = Array.new
                 structure = Array.new
+
+                if @options[:drop_table]
+                    bd.elements('table').each {|t|
+                        structure << "DROP TABLE #{t.name};"
+                    }
+                end
+
                 bd.elements('table').each do |t|
                     list = Array.new
                     extra_lines = Array.new
@@ -73,7 +80,6 @@ module Fosc
                     structure << '' 
                     new_sequences.each { |s| structure << "CREATE SEQUENCE #{s};"}
                     # And now, the actual table
-                    structure << "DROP TABLE #{t.name};" if @options[:drop_table]
                     structure << "CREATE TABLE #{t.name} ("
                     structure << (list + extra_lines).join(",\n")
                     structure << ");\n"
