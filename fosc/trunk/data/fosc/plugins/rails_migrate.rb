@@ -249,7 +249,7 @@ module Fosc
                     table.attributes.each {|at|
                         next unless at.name == "index"
                         fosc_indexes << {
-                            "name" => at.props["name"],
+                            "name" => at.props["name"] || "index_#{table.name}_#{at.props["columns"].tr(",", "_")}",
                             "columns" => at.props["columns"].split(','),
                             "unique" => at.props.has_key?("unique")
                         }
