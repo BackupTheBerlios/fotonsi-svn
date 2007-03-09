@@ -1,6 +1,7 @@
+DESTDIR=
 CCFLAGS=-g -Wall
 CC=gcc
-PREFIX=/usr/local
+PREFIX=$(DESTDIR)/usr/local
 
 all: libchrb.so.1
 
@@ -11,6 +12,7 @@ libchrb.so.1: chrb.o
 	$(CC) -shared -Wl,-soname,libchrb.so.1 -o $@ $< -lc -ldl
 
 install: libchrb.so.1
+	mkdir -p $(PREFIX)/lib
 	cp -u libchrb.so.1 $(PREFIX)/lib
 
 clean:
