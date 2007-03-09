@@ -4,8 +4,8 @@ sub MY::postamble {
    return <<'INSTALL_INI';
 install ::
 	make -C libchrb install
-	@if [ ! -r /etc/chrootbooter.ini ]; then \
-                cp chrootbooter.ini-sample /etc/chrootbooter.ini; \
+	@if [ ! -r $(DESTDIR)/etc/chrootbooter.ini ]; then \
+                cp chrootbooter.ini-sample $(DESTDIR)/etc/chrootbooter.ini; \
                 echo "***************************"; \
                 echo "Don't forget to edit /etc/chrootbooter.ini to suit your needs!"; \
                 echo "***************************"; \
