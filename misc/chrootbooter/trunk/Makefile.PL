@@ -5,7 +5,7 @@ sub MY::postamble {
 install ::
 	make -C libchrb install
 	@if [ ! -r $(DESTDIR)/etc/chrootbooter.ini ]; then \
-                mkdir -p $(DESTDIR)/etc \
+                mkdir -p $(DESTDIR)/etc; \
                 cp chrootbooter.ini-sample $(DESTDIR)/etc/chrootbooter.ini; \
                 echo "***************************"; \
                 echo "Don't forget to edit /etc/chrootbooter.ini to suit your needs!"; \
