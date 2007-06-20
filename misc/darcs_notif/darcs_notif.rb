@@ -8,7 +8,7 @@ Dir["*"].each {|basedir|
     next unless File.directory?(basedir + "/_darcs")
 
     patchs = []
-    ENV["DARCS_DONT_ESCAPE_ISPRINT"] = 1
+    ENV["DARCS_DONT_ESCAPE_ISPRINT"] = "1"
     darcs = `darcs changes --repodir="#{basedir}" -v --matches 'date "30 minutes ago"'`
     darcs.each_line {|line|
         patchs << '' if /^\w+ \w+.*@.*$/ === line    # Usamos esta regex para separar los parches
