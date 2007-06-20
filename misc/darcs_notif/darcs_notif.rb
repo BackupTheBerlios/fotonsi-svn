@@ -2,13 +2,14 @@
 
 require 'net/smtp'
 
-EMAILS = %w(eduardo@foton.es zoso@foton.es mvazquez@foton.es doc@foton.es tolo@foton.es jarbelo@foton.es ialiende@foton.es rdale@foton.es ancor@foton.es knut@foton.es ivan@foton.es wage@foton.es setepo@gmail.com alberto@foton.es)
+EMAILS = %w(eduardo@foton.es zoso@foton.es mvazquez@foton.es doc@foton.es tolo@foton.es jarbelo@foton.es ialiende@foton.es rdale@foton.es ancor@foton.es knut@foton.es ivan@foton.es wage@foton.es setepo@gmail.com setepo@foton.es)
 
 Dir["*"].each {|basedir|
     next unless File.directory?(basedir + "/_darcs")
 
     patchs = []
-    darcs = `darcs changes --repodir="#{basedir}" -v --matches 'date "10 minutes ago"'`
+    ENV["DARCS_DONT_ESCAPE_ISPRINT"] = 1
+    darcs = `darcs changes --repodir="#{basedir}" -v --matches 'date "30 minutes ago"'`
     darcs.each_line {|line|
         patchs << '' if /^\w+ \w+.*@.*$/ === line    # Usamos esta regex para separar los parches
         patchs.last << line
@@ -31,6 +32,7 @@ Dir["*"].each {|basedir|
                 msg << "From: #{author}\n"
                 msg << "To: #{EMAILS.join(",")}\n"
                 msg << "Subject: [darcs fotón] [#{basedir}] #{name}\n"
+                msg << "Content-Type: text/plain; charset=iso-8859-9"
                 msg << "\n\n"
                 msg << patch
 
